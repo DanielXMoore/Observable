@@ -159,3 +159,22 @@ describe "Observable functions", ->
     o.each (n) ->
       assert.equal n, 5
       done()
+
+  it "should work on an array dependency", ->
+    oA = Observable [1, 2, 3]
+    
+    o = Observable ->
+      oA()[0]
+
+    last = Observable ->
+      oA()[oA().length-1]
+
+    assert.equal o(), 1
+
+    oA.unshift 0
+
+    assert.equal o(), 0
+
+    oA.push 4
+
+    assert.equal last(), 4, "Last should be 4"

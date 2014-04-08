@@ -29,8 +29,7 @@ If `value` is a function compute dependencies and listen to observables that it 
         fn = value
         self = ->
           # Automagic dependency observation
-          if base
-            self.observe base
+          magicDependency(self)
 
           return value
 
@@ -59,8 +58,7 @@ The value is always returned.
               notify(newValue)
           else
             # Automagic dependency observation
-            if base
-              self.observe base
+            magicDependency(self)
 
           return value
 
@@ -158,16 +156,30 @@ The extend method adds one objects properties to another.
 
       return target
 
-    base = undefined
+Super hax for computing dependencies. This needs to be a shared global so that
+different bundled versions of observable libraries can interoperate.
+
+    global.OBSERVABLE_ROOT_HACK = undefined
+
+    magicDependency = (self) ->
+      if base = global.OBSERVABLE_ROOT_HACK
+        self.observe base
+
+    withBase = (root, fn) ->
+      global.OBSERVABLE_ROOT_HACK = root
+      value = fn()
+      global.OBSERVABLE_ROOT_HACK = undefined
+
+      return value
+
+    base = ->
+      global.OBSERVABLE_ROOT_HACK
 
 Automagically compute dependencies.
 
     computeDependencies = (fn, root) ->
-      base = root
-      value = fn()
-      base = undefined
-
-      return value
+      withBase root, ->
+        fn()
 
 Remove a value from an array.
 

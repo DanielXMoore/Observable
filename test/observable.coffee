@@ -162,7 +162,7 @@ describe "Observable functions", ->
 
   it "should work on an array dependency", ->
     oA = Observable [1, 2, 3]
-    
+
     o = Observable ->
       oA()[0]
 

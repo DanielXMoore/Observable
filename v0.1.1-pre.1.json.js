@@ -21,7 +21,7 @@ window["distri/observable:v0.1.1-pre.1"]({
     "pixie.cson": {
       "path": "pixie.cson",
       "mode": "100644",
-      "content": "version: \"0.1.1-pre.1\"\n",
+      "content": "version: \"0.1.1\"\n",
       "type": "blob"
     },
     "test/observable.coffee": {
@@ -39,7 +39,7 @@ window["distri/observable:v0.1.1-pre.1"]({
     },
     "pixie": {
       "path": "pixie",
-      "content": "module.exports = {\"version\":\"0.1.1-pre.1\"};",
+      "content": "module.exports = {\"version\":\"0.1.1\"};",
       "type": "blob"
     },
     "test/observable": {
@@ -51,7 +51,7 @@ window["distri/observable:v0.1.1-pre.1"]({
   "progenitor": {
     "url": "http://strd6.github.io/editor/"
   },
-  "version": "0.1.1-pre.1",
+  "version": "0.1.1",
   "entryPoint": "main",
   "repository": {
     "id": 17119562,

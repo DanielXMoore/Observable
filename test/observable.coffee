@@ -1,4 +1,4 @@
-Observable = require "../main"
+global.Observable = require "../main"
 
 describe 'Observable', ->
   it 'should create an observable for an object', ->

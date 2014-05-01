@@ -140,10 +140,13 @@ Remove an element from the array and notify observers of changes.
           remove listeners, fn
 
         increment: (n) ->
-          self self() + n
+          self value + n
 
         decrement: (n) ->
-          self self() - n
+          self value - n
+
+        toString: ->
+          "Observable(#{value})"
 
       return self
 

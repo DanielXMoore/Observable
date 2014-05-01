@@ -139,6 +139,9 @@ Remove an element from the array and notify observers of changes.
         stopObserving: (fn) ->
           remove listeners, fn
 
+        toggle: ->
+          self !value
+
         increment: (n) ->
           self value + n
 

@@ -74,6 +74,15 @@ describe 'Observable', ->
     
     assert.equal observable(), -4
 
+  it "should toggle", ->
+    observable = Observable false
+
+    observable.toggle()
+    assert.equal observable(), true
+
+    observable.toggle()
+    assert.equal observable(), false
+
 describe "Observable Array", ->
   it "should proxy array methods", ->
     o = Observable [5]

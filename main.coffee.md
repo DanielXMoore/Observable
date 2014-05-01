@@ -135,8 +135,15 @@ Remove an element from the array and notify observers of changes.
           last: ->
             value[value.length-1]
 
-      self.stopObserving = (fn) ->
-        remove listeners, fn
+      extend self,
+        stopObserving: (fn) ->
+          remove listeners, fn
+
+        increment: (n) ->
+          self self() + n
+
+        decrement: (n) ->
+          self self() - n
 
       return self
 

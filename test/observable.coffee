@@ -60,6 +60,20 @@ describe 'Observable', ->
 
     assert.equal called, 1
 
+  it "should increment", ->
+    observable = Observable 1
+    
+    observable.increment(5)
+    
+    assert.equal observable(), 6
+
+  it "should decremnet", ->
+    observable = Observable 1
+    
+    observable.decrement 5
+    
+    assert.equal observable(), -4
+
 describe "Observable Array", ->
   it "should proxy array methods", ->
     o = Observable [5]

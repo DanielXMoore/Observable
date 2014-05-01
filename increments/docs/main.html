@@ -248,10 +248,13 @@
       remove listeners, fn
 
     increment: (n) -&gt;
-      self self() + n
+      self value + n
 
     decrement: (n) -&gt;
-      self self() - n
+      self value - n
+
+    toString: -&gt;
+      <span class="string">"Observable(<span class="subst">#{value}</span>)"</span>
 
   <span class="keyword">return</span> self</code></pre>
 </div>

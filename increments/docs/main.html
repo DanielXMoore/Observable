@@ -247,6 +247,9 @@
     stopObserving: (fn) -&gt;
       remove listeners, fn
 
+    toggle: -&gt;
+      self !value
+
     increment: (n) -&gt;
       self value + n
 

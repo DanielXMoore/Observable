@@ -1,4 +1,4 @@
-Observable = require "../main"
+global.Observable = require "../main"
 
 describe 'Observable', ->
   it 'should create an observable for an object', ->
@@ -59,6 +59,29 @@ describe 'Observable', ->
     observable("wat")
 
     assert.equal called, 1
+
+  it "should increment", ->
+    observable = Observable 1
+    
+    observable.increment(5)
+    
+    assert.equal observable(), 6
+
+  it "should decremnet", ->
+    observable = Observable 1
+    
+    observable.decrement 5
+    
+    assert.equal observable(), -4
+
+  it "should toggle", ->
+    observable = Observable false
+
+    observable.toggle()
+    assert.equal observable(), true
+
+    observable.toggle()
+    assert.equal observable(), false
 
 describe "Observable Array", ->
   it "should proxy array methods", ->

@@ -7,6 +7,10 @@
     "uglify-js": "~2.3.6",
     "browserify": "~2.26.0"
   },
+  "scripts": {
+    "prepublish": "script/prepublish",
+    "test": "script/test"
+  },
   "main": "dist/main.js",
   "files": [
     "dist"

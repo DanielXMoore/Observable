@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+mkdir -p docs
+rm -rf docs/*
+
+node_modules/.bin/docco -t resources/docco.jst source/*
+node_modules/.bin/coffee -co docs/javascripts resources/interactive.litcoffee
+node_modules/.bin/browserify -r ./dist/inflector.js > docs/javascripts/inflector.js
+
+cp -r resources/docco.css resources/public docs
+cp resources/*.js docs/javascripts
+cp docs/inflector.html docs/index.html

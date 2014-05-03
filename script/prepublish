@@ -1,0 +1,9 @@
+#!/bin/bash
+
+./node_modules/.bin/coffee -co dist/ *.coffee.md
+
+for file in dist/*.js
+do
+  ./node_modules/.bin/uglifyjs $file > tmp.js
+  mv tmp.js $file
+done

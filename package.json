@@ -12,7 +12,4 @@
     "test": "script/test"
   },
   "main": "dist/main.js",
-  "files": [
-    "dist"
-  ]
 }

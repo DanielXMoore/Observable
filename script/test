@@ -3,4 +3,4 @@
 node_modules/.bin/mocha \
   --compilers coffee:coffee-script \
   --reporter spec \
-  --require test_helper.coffee.md
+  --require test/setup.coffee.md

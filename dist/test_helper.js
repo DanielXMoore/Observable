@@ -1,0 +1,1 @@
+!function(){global.assert=require("assert")}.call(this);

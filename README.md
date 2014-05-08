@@ -6,13 +6,7 @@ Installation
 
 Node
 
-    npm install git://github.com/distri/observable#npm-v0.1.2
-
-Distri
-
-    dependencies:
-      observable: "distri/observable:v0.1.2"
-      ...
+    npm install o_0
 
 Usage
 -----

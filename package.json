@@ -1,6 +1,6 @@
 {
-  "name": "O2",
-  "version": "0.1.2",
+  "name": "o_0",
+  "version": "0.2.0-pre.1",
   "devDependencies": {
     "coffee-script": "~1.6.3",
     "mocha": "~1.12.0",
@@ -11,5 +11,25 @@
     "prepublish": "script/prepublish",
     "test": "script/test"
   },
-  "main": "dist/main.js"
+  "files": [
+    "dist/"
+  ],
+  "main": "dist/main.js",
+  "description": "Fresh and intellegent observables",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/distri/observable.git"
+  },
+  "keywords": [
+    "observable"
+  ],
+  "author": "Daniel X. Moore",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/distri/observable/issues"
+  },
+  "homepage": "https://github.com/distri/observable"
 }

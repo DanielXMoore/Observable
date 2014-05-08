@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/distri/observable.svg?branch=npm)](https://travis-ci.org/distri/observable)
+
 Observable
 ==========
 

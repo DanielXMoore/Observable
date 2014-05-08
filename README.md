@@ -11,6 +11,8 @@ Node
 Usage
 -----
 
+    Observable = require "o_0"
+
 Get notified when the value changes.
 
     observable = Observable 5

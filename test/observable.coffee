@@ -165,6 +165,15 @@ describe "Observable functions", ->
 
     bottom("wat")
 
+  it "should be ok even if the function throws an exception", ->
+    assert.throws ->
+      t = Observable ->
+        throw "wat"
+
+    # TODO: Should be able to find a test case that is affected by this rather that
+    # checking it directly
+    assert.equal global.OBSERVABLE_ROOT_HACK, undefined
+
   it "should have an each method", ->
     o = Observable ->
 
@@ -218,4 +227,3 @@ describe "Observable functions", ->
         done()
 
       model.lastName "Bro"
-

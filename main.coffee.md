@@ -185,10 +185,12 @@ different bundled versions of observable libraries can interoperate.
       if base = global.OBSERVABLE_ROOT_HACK
         self.observe base
 
-    withBase = (root, fn, context) ->
+    withBase = (root, fn) ->
       global.OBSERVABLE_ROOT_HACK = root
-      value = fn.call(context)
-      global.OBSERVABLE_ROOT_HACK = undefined
+      try
+        value = fn()
+      finally
+        global.OBSERVABLE_ROOT_HACK = undefined
 
       return value
 
@@ -200,7 +202,6 @@ Automagically compute dependencies.
     computeDependencies = (fn, root, context) ->
       withBase root, ->
         fn.call(context)
-      , context
 
 Remove a value from an array.
 

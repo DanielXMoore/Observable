@@ -201,3 +201,21 @@ describe "Observable functions", ->
     oA.push 4
 
     assert.equal last(), 4, "Last should be 4"
+
+  describe "Scoping", ->
+    it "should be scoped to optional context", (done) ->
+      model =
+        firstName: Observable "Duder"
+        lastName: Observable "Man"
+
+      model.name = Observable ->
+        "#{@firstName()} #{@lastName()}"
+      , model
+
+      model.name.observe (newValue) ->
+        assert.equal newValue, "Duder Bro"
+
+        done()
+
+      model.lastName "Bro"
+

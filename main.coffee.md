@@ -7,7 +7,7 @@ Function dependencies are automagically observed.
 
 Standard array methods are proxied through to the underlying array.
 
-    Observable = (value) ->
+    Observable = (value, context) ->
 
 Return the object if it is already an observable object.
 
@@ -27,6 +27,13 @@ If `value` is a function compute dependencies and listen to observables that it 
 
       if typeof value is 'function'
         fn = value
+
+Our return function is a function that holds only a cached value which is updated
+when it's dependencies change.
+
+The `magicDependency` call is so other functions can depend on this computed function the
+same way we depend on other types of observables.
+
         self = ->
           # Automagic dependency observation
           magicDependency(self)
@@ -37,10 +44,10 @@ If `value` is a function compute dependencies and listen to observables that it 
           listeners.push listener
 
         changed = ->
-          value = fn()
+          value = fn.call(context)
           notify(value)
 
-        value = computeDependencies(fn, changed)
+        value = computeDependencies(fn, changed, context)
 
       else
 
@@ -180,8 +187,10 @@ different bundled versions of observable libraries can interoperate.
 
     withBase = (root, fn) ->
       global.OBSERVABLE_ROOT_HACK = root
-      value = fn()
-      global.OBSERVABLE_ROOT_HACK = undefined
+      try
+        value = fn()
+      finally
+        global.OBSERVABLE_ROOT_HACK = undefined
 
       return value
 
@@ -190,9 +199,9 @@ different bundled versions of observable libraries can interoperate.
 
 Automagically compute dependencies.
 
-    computeDependencies = (fn, root) ->
+    computeDependencies = (fn, root, context) ->
       withBase root, ->
-        fn()
+        fn.call(context)
 
 Remove a value from an array.
 

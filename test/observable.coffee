@@ -82,6 +82,14 @@ describe 'Observable', ->
 
     observable.toggle()
     assert.equal observable(), false
+  
+  it "should trigger when toggling", (done) ->
+    observable = Observable true
+    observable.observe (v) ->
+      assert.equal v, false
+      done()
+
+    observable.toggle()
 
 describe "Observable Array", ->
   it "should proxy array methods", ->

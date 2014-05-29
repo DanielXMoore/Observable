@@ -82,7 +82,7 @@ describe 'Observable', ->
 
     observable.toggle()
     assert.equal observable(), false
-  
+
   it "should trigger when toggling", (done) ->
     observable = Observable true
     observable.observe (v) ->
@@ -178,7 +178,7 @@ describe "Observable functions", ->
 
     dynamicObservable = Observable ->
       observableArray.filter (item) ->
-        item.age() > 3
+        item.age > 3
 
     assert.equal dynamicObservable().length, 0
 
@@ -187,6 +187,31 @@ describe "Observable functions", ->
 
     observableArray()[0].age 5
     assert.equal dynamicObservable().length, 1
+
+  it "should work with observables as if they were values", ->
+    a = Observable 5
+    b = Observable 3
+
+    total = Observable ->
+      a + b
+
+    assert.equal total(), 8
+
+    a 4
+
+    assert.equal total(), 7
+
+  it "should work with observable strings as if they were values", ->
+    word = Observable "cool"
+
+    text = Observable ->
+      "It's #{word} to be magic"
+
+    assert.equal text(), "It's cool to be magic"
+
+    word "radical"
+
+    assert.equal text(), "It's radical to be magic"
 
   it "should be ok even if the function throws an exception", ->
     assert.throws ->

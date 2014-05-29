@@ -159,6 +159,11 @@ Remove an element from the array and notify observers of changes.
         toString: ->
           "Observable(#{value})"
 
+        valueOf: ->
+          magicDependency(self)
+
+          return value
+
       return self
 
 Export `Observable`

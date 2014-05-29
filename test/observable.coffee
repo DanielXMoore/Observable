@@ -82,6 +82,14 @@ describe 'Observable', ->
 
     observable.toggle()
     assert.equal observable(), false
+  
+  it "should trigger when toggling", (done) ->
+    observable = Observable true
+    observable.observe (v) ->
+      assert.equal v, false
+      done()
+
+    observable.toggle()
 
 describe "Observable Array", ->
   it "should proxy array methods", ->
@@ -164,6 +172,21 @@ describe "Observable functions", ->
       done()
 
     bottom("wat")
+
+  it "should work with dynamic dependencies", ->
+    observableArray = Observable []
+
+    dynamicObservable = Observable ->
+      observableArray.filter (item) ->
+        item.age() > 3
+
+    assert.equal dynamicObservable().length, 0
+
+    observableArray.push
+      age: Observable 1
+
+    observableArray()[0].age 5
+    assert.equal dynamicObservable().length, 1
 
   it "should be ok even if the function throws an exception", ->
     assert.throws ->

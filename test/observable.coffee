@@ -173,6 +173,21 @@ describe "Observable functions", ->
 
     bottom("wat")
 
+  it "should work with dynamic dependencies", ->
+    observableArray = Observable []
+
+    dynamicObservable = Observable ->
+      observableArray.filter (item) ->
+        item.age() > 3
+
+    assert.equal dynamicObservable().length, 0
+
+    observableArray.push
+      age: Observable 1
+
+    observableArray()[0].age 5
+    assert.equal dynamicObservable().length, 1
+
   it "should be ok even if the function throws an exception", ->
     assert.throws ->
       t = Observable ->

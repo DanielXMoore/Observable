@@ -44,7 +44,7 @@ same way we depend on other types of observables.
           listeners.push listener
 
         changed = ->
-          value = fn.call(context)
+          value = computeDependencies(fn, changed, context)
           notify(value)
 
         value = computeDependencies(fn, changed, context)
@@ -98,6 +98,7 @@ If the value is an array then proxy array methods and add notifications to mutat
           "some"
         ].forEach (method) ->
           self[method] = (args...) ->
+            magicDependency(self)
             value[method](args...)
 
         [
@@ -182,20 +183,22 @@ different bundled versions of observable libraries can interoperate.
     global.OBSERVABLE_ROOT_HACK = undefined
 
     magicDependency = (self) ->
-      if base = global.OBSERVABLE_ROOT_HACK
-        self.observe base
+      global.OBSERVABLE_ROOT_HACK?.push self
 
     withBase = (root, fn) ->
-      global.OBSERVABLE_ROOT_HACK = root
+      deps = global.OBSERVABLE_ROOT_HACK = []
       try
         value = fn()
+        root._deps?.forEach (observable) ->
+          observable.stopObserving root
+        root._deps = deps
+
+        deps.forEach (observable) ->
+          observable.observe root
       finally
         global.OBSERVABLE_ROOT_HACK = undefined
 
       return value
-
-    base = ->
-      global.OBSERVABLE_ROOT_HACK
 
 Automagically compute dependencies.
 

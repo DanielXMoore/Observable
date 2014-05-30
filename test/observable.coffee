@@ -82,7 +82,7 @@ describe 'Observable', ->
 
     observable.toggle()
     assert.equal observable(), false
-  
+
   it "should trigger when toggling", (done) ->
     observable = Observable true
     observable.observe (v) ->
@@ -188,6 +188,21 @@ describe "Observable functions", ->
     observableArray()[0].age 5
     assert.equal dynamicObservable().length, 1
 
+  it "should work with context", ->
+    model =
+      a: Observable "Hello"
+      b: Observable "there"
+
+    model.c = Observable ->
+      "#{@a()} #{@b()}"
+    , model
+
+    assert.equal model.c(), "Hello there"
+
+    model.b "world"
+
+    assert.equal model.c(), "Hello world"
+
   it "should be ok even if the function throws an exception", ->
     assert.throws ->
       t = Observable ->
@@ -233,6 +248,28 @@ describe "Observable functions", ->
     oA.push 4
 
     assert.equal last(), 4, "Last should be 4"
+
+  it "should work with multiple dependencies", ->
+    letter = Observable "A"
+    checked = ->
+      l = letter()
+      @name().indexOf(l) is 0
+
+    first = {name: Observable("Andrew")}
+    first.checked = Observable checked, first
+
+    second = {name: Observable("Benjamin")}
+    second.checked = Observable checked, second
+
+    assert.equal first.checked(), true
+    assert.equal second.checked(), false
+
+    assert.equal letter.listeners.length, 2
+
+    letter "B"
+
+    assert.equal first.checked(), false
+    assert.equal second.checked(), true
 
   describe "Scoping", ->
     it "should be scoped to optional context", (done) ->

@@ -18,7 +18,7 @@ Maintain a set of listeners to observe changes and provide a helper to notify ea
       listeners = []
 
       notify = (newValue) ->
-        listeners.forEach (listener) ->
+        copy(listeners).forEach (listener) ->
           listener(newValue)
 
 Our observable function is stored as a reference to `self`.
@@ -40,14 +40,11 @@ same way we depend on other types of observables.
 
           return value
 
-        self.observe = (listener) ->
-          listeners.push listener
-
         changed = ->
-          value = computeDependencies(fn, changed, context)
+          value = computeDependencies(self, fn, changed, context)
           notify(value)
 
-        value = computeDependencies(fn, changed, context)
+        value = computeDependencies(self, fn, changed, context)
 
       else
 
@@ -68,11 +65,6 @@ The value is always returned.
             magicDependency(self)
 
           return value
-
-Add a listener for when this object changes.
-
-        self.observe = (listener) ->
-          listeners.push listener
 
 This `each` iterator is similar to [the Maybe monad](http://en.wikipedia.org/wiki/Monad_&#40;functional_programming&#41;#The_Maybe_monad) in that our observable may contain a single value or nothing at all.
 
@@ -144,6 +136,11 @@ Remove an element from the array and notify observers of changes.
             value[value.length-1]
 
       extend self,
+        listeners: listeners
+
+        observe: (listener) ->
+          listeners.push listener
+
         stopObserving: (fn) ->
           remove listeners, fn
 
@@ -183,18 +180,22 @@ different bundled versions of observable libraries can interoperate.
     global.OBSERVABLE_ROOT_HACK = undefined
 
     magicDependency = (self) ->
-      global.OBSERVABLE_ROOT_HACK?.push self
+      if observerStack = global.OBSERVABLE_ROOT_HACK
+        observerStack.push self
 
-    withBase = (root, fn) ->
+    withBase = (self, update, fn) ->
+      if global.OBSERVABLE_ROOT_HACK
+        throw "TODO: Can currently only resolve one layer of dependencies at a time"
       deps = global.OBSERVABLE_ROOT_HACK = []
       try
         value = fn()
-        root._deps?.forEach (observable) ->
-          observable.stopObserving root
-        root._deps = deps
+        self._deps?.forEach (observable) ->
+          observable.stopObserving update
+
+        self._deps = deps
 
         deps.forEach (observable) ->
-          observable.observe root
+          observable.observe update
       finally
         global.OBSERVABLE_ROOT_HACK = undefined
 
@@ -202,8 +203,8 @@ different bundled versions of observable libraries can interoperate.
 
 Automagically compute dependencies.
 
-    computeDependencies = (fn, root, context) ->
-      withBase root, ->
+    computeDependencies = (self, fn, update, context) ->
+      withBase self, update, ->
         fn.call(context)
 
 Remove a value from an array.
@@ -213,3 +214,6 @@ Remove a value from an array.
 
       if index >= 0
         array.splice(index, 1)[0]
+
+    copy = (array) ->
+      array.concat([])

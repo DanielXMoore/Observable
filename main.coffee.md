@@ -40,6 +40,11 @@ same way we depend on other types of observables.
 
           return value
 
+        self.each = (args...) ->
+          magicDependency(self)
+
+          splat(value).forEach(args...)
+
         changed = ->
           value = computeDependencies(self, fn, changed, context)
           notify(value)
@@ -69,6 +74,8 @@ The value is always returned.
 This `each` iterator is similar to [the Maybe monad](http://en.wikipedia.org/wiki/Monad_&#40;functional_programming&#41;#The_Maybe_monad) in that our observable may contain a single value or nothing at all.
 
       self.each = (args...) ->
+        magicDependency(self)
+
         if value?
           [value].forEach(args...)
 
@@ -158,6 +165,14 @@ Remove an element from the array and notify observers of changes.
 
       return self
 
+    Observable.concat = (args...) ->
+      Observable ->
+        items = []
+        args.forEach (arg) ->
+          items = items.concat splat arg
+
+        items
+
 Export `Observable`
 
     module.exports = Observable
@@ -217,3 +232,22 @@ Remove a value from an array.
 
     copy = (array) ->
       array.concat([])
+
+    get = (arg) ->
+      if typeof arg is "function"
+        arg()
+      else
+        arg
+
+    splat = (item) ->
+      results = []
+
+      if typeof item.forEach is "function"
+        item.forEach (i) ->
+          results.push i
+      else
+        result = get item
+
+        results.push result if result?
+
+      results

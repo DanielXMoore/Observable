@@ -287,3 +287,43 @@ describe "Observable functions", ->
         done()
 
       model.lastName "Bro"
+
+  describe "concat", ->
+    it "should return an observable array that changes based on changes in inputs", ->
+      numbers = Observable [1, 2, 3]
+      letters = Observable ["a", "b", "c"]
+      item = Observable({})
+      nullable = Observable null
+
+      observableArray = Observable.concat numbers, "literal", letters, item, nullable
+
+      assert.equal observableArray().length, 3 + 1 + 3 + 1
+
+      assert.equal observableArray()[0], 1
+      assert.equal observableArray()[3], "literal"
+      assert.equal observableArray()[4], "a"
+      assert.equal observableArray()[7], item()
+
+      numbers.push 4
+
+      assert.equal observableArray().length, 9
+
+      nullable "cool"
+
+      assert.equal observableArray().length, 10
+
+    it "should work with observable functions that return arrays", ->
+      item = Observable("wat")
+
+      computedArray = Observable ->
+        [item()]
+
+      observableArray = Observable.concat computedArray, computedArray
+
+      assert.equal observableArray().length, 2
+
+      assert.equal observableArray()[1], "wat"
+
+      item "yolo"
+
+      assert.equal observableArray()[1], "yolo"

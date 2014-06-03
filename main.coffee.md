@@ -166,12 +166,14 @@ Remove an element from the array and notify observers of changes.
       return self
 
     Observable.concat = (args...) ->
-      Observable ->
-        items = []
-        args.forEach (arg) ->
-          items = items.concat splat arg
+      args = Observable(args)
 
-        items
+      o = Observable ->
+        flatten args.map(splat)
+
+      o.push = args.push
+
+      return o
 
 Export `Observable`
 
@@ -251,3 +253,11 @@ Remove a value from an array.
         results.push result if result?
 
       results
+
+    last = (array) ->
+      array[array.length - 1]
+
+    flatten = (array) ->
+      array.reduce (a, b) ->
+        a.concat(b)
+      , []

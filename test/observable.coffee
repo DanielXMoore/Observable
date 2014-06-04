@@ -210,7 +210,7 @@ describe "Observable functions", ->
 
     # TODO: Should be able to find a test case that is affected by this rather that
     # checking it directly
-    assert.equal global.OBSERVABLE_ROOT_HACK, undefined
+    assert.equal global.OBSERVABLE_ROOT_HACK.length, 0
 
   it "should have an each method", ->
     o = Observable ->
@@ -270,6 +270,18 @@ describe "Observable functions", ->
 
     assert.equal first.checked(), false
     assert.equal second.checked(), true
+
+  it "should work with nested observable construction", ->
+    gen = Observable ->
+      Observable "Duder"
+
+    o = gen()
+
+    assert.equal o(), "Duder"
+
+    o("wat")
+
+    assert.equal o(), "wat"
 
   describe "Scoping", ->
     it "should be scoped to optional context", (done) ->

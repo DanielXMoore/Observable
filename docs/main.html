@@ -37,7 +37,7 @@
 <p>Standard array methods are proxied through to the underlying array.</p>
 
             </div>
-            <div class="content"><pre><code class="lang-coffeescript"><span class="function"><span class="title">Observable</span></span> = (value) -&gt;</code></pre>
+            <div class="content"><pre><code class="lang-coffeescript"><span class="function"><span class="title">Observable</span></span> = (value, context) -&gt;</code></pre>
 </div>
         </li>
         
@@ -66,7 +66,7 @@
             <div class="content"><pre><code class="lang-coffeescript">  listeners = []
 
   <span class="function"><span class="title">notify</span></span> = (newValue) -&gt;
-    listeners.forEach (listener) -&gt;
+    copy(listeners).forEach (listener) -&gt;
       listener(newValue)</code></pre>
 </div>
         </li>
@@ -82,23 +82,7 @@
 
             </div>
             <div class="content"><pre><code class="lang-coffeescript">  <span class="keyword">if</span> <span class="keyword">typeof</span> value <span class="keyword">is</span> <span class="string">'function'</span>
-    fn = value
-    <span class="function"><span class="title">self</span></span> = -&gt;
-      <span class="comment"># Automagic dependency observation</span>
-      magicDependency(self)
-
-      <span class="keyword">return</span> value
-
-    self.<span class="function"><span class="title">observe</span></span> = (listener) -&gt;
-      listeners.push listener
-
-    <span class="function"><span class="title">changed</span></span> = -&gt;
-      value = fn()
-      notify(value)
-
-    value = computeDependencies(fn, changed)
-
-  <span class="keyword">else</span></code></pre>
+    fn = value</code></pre>
 </div>
         </li>
         
@@ -107,6 +91,39 @@
             <div class="annotation">
               <div class="pilwrap">
                 <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Our return function is a function that holds only a cached value which is updated
+when it&#39;s dependencies change.</p>
+<p>The <code>magicDependency</code> call is so other functions can depend on this computed function the
+same way we depend on other types of observables.</p>
+
+            </div>
+            <div class="content"><pre><code class="lang-coffeescript">    <span class="function"><span class="title">self</span></span> = -&gt;
+      <span class="comment"># Automagic dependency observation</span>
+      magicDependency(self)
+
+      <span class="keyword">return</span> value
+
+    self.<span class="function"><span class="title">each</span></span> = (args...) -&gt;
+      magicDependency(self)
+
+      splat(value).forEach(args...)
+
+    <span class="function"><span class="title">changed</span></span> = -&gt;
+      value = computeDependencies(self, fn, changed, context)
+      notify(value)
+
+    value = computeDependencies(self, fn, changed, context)
+
+  <span class="keyword">else</span></code></pre>
+</div>
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>When called with zero arguments it is treated as a getter. When called with one argument it is treated as a setter.</p>
 <p>Changes to the value will trigger notifications.</p>
@@ -128,20 +145,6 @@
         </li>
         
         
-        <li id="section-7">
-            <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>
-              <p>Add a listener for when this object changes.</p>
-
-            </div>
-            <div class="content"><pre><code class="lang-coffeescript">    self.<span class="function"><span class="title">observe</span></span> = (listener) -&gt;
-      listeners.push listener</code></pre>
-</div>
-        </li>
-        
-        
         <li id="section-8">
             <div class="annotation">
               <div class="pilwrap">
@@ -151,6 +154,8 @@
 
             </div>
             <div class="content"><pre><code class="lang-coffeescript">  self.<span class="function"><span class="title">each</span></span> = (args...) -&gt;
+    magicDependency(self)
+
     <span class="keyword">if</span> value?
       [value].forEach(args...)</code></pre>
 </div>
@@ -181,6 +186,7 @@
       <span class="string">"some"</span>
     ].forEach (method) -&gt;
       self[method] = (args...) -&gt;
+        magicDependency(self)
         value[method](args...)
 
     [
@@ -244,6 +250,11 @@
         value[value.length-<span class="number">1</span>]
 
   extend self,
+    listeners: listeners
+
+    observe: (listener) -&gt;
+      listeners.push listener
+
     stopObserving: (fn) -&gt;
       remove listeners, fn
 
@@ -259,7 +270,17 @@
     toString: -&gt;
       <span class="string">"Observable(<span class="subst">#{value}</span>)"</span>
 
-  <span class="keyword">return</span> self</code></pre>
+  <span class="keyword">return</span> self
+
+Observable.<span class="function"><span class="title">concat</span></span> = (args...) -&gt;
+  args = Observable(args)
+
+  o = Observable -&gt;
+    flatten args.map(splat)
+
+  o.push = args.push
+
+  <span class="keyword">return</span> o</code></pre>
 </div>
         </li>
         
@@ -321,18 +342,26 @@ different bundled versions of observable libraries can interoperate.</p>
             <div class="content"><pre><code class="lang-coffeescript">global.OBSERVABLE_ROOT_HACK = <span class="literal">undefined</span>
 
 <span class="function"><span class="title">magicDependency</span></span> = (self) -&gt;
-  <span class="keyword">if</span> base = global.OBSERVABLE_ROOT_HACK
-    self.observe base
+  <span class="keyword">if</span> observerStack = global.OBSERVABLE_ROOT_HACK
+    observerStack.push self
 
-<span class="function"><span class="title">withBase</span></span> = (root, fn) -&gt;
-  global.OBSERVABLE_ROOT_HACK = root
-  value = fn()
-  global.OBSERVABLE_ROOT_HACK = <span class="literal">undefined</span>
+<span class="function"><span class="title">withBase</span></span> = (self, update, fn) -&gt;
+  <span class="keyword">if</span> global.OBSERVABLE_ROOT_HACK
+    <span class="keyword">throw</span> <span class="string">"TODO: Can currently only resolve one layer of dependencies at a time"</span>
+  deps = global.OBSERVABLE_ROOT_HACK = []
+  <span class="keyword">try</span>
+    value = fn()
+    self._deps?.forEach (observable) -&gt;
+      observable.stopObserving update
 
-  <span class="keyword">return</span> value
+    self._deps = deps
 
-<span class="function"><span class="title">base</span></span> = -&gt;
-  global.OBSERVABLE_ROOT_HACK</code></pre>
+    deps.forEach (observable) -&gt;
+      observable.observe update
+  <span class="keyword">finally</span>
+    global.OBSERVABLE_ROOT_HACK = <span class="literal">undefined</span>
+
+  <span class="keyword">return</span> value</code></pre>
 </div>
         </li>
         
@@ -345,9 +374,9 @@ different bundled versions of observable libraries can interoperate.</p>
               <p>Automagically compute dependencies.</p>
 
             </div>
-            <div class="content"><pre><code class="lang-coffeescript"><span class="function"><span class="title">computeDependencies</span></span> = (fn, root) -&gt;
-  withBase root, -&gt;
-    fn()</code></pre>
+            <div class="content"><pre><code class="lang-coffeescript"><span class="function"><span class="title">computeDependencies</span></span> = (self, fn, update, context) -&gt;
+  withBase self, update, -&gt;
+    fn.call(context)</code></pre>
 </div>
         </li>
         
@@ -364,7 +393,37 @@ different bundled versions of observable libraries can interoperate.</p>
   index = array.indexOf(value)
 
   <span class="keyword">if</span> index &gt;= <span class="number">0</span>
-    array.splice(index, <span class="number">1</span>)[<span class="number">0</span>]</code></pre>
+    array.splice(index, <span class="number">1</span>)[<span class="number">0</span>]
+
+<span class="function"><span class="title">copy</span></span> = (array) -&gt;
+  array.concat([])
+
+<span class="function"><span class="title">get</span></span> = (arg) -&gt;
+  <span class="keyword">if</span> <span class="keyword">typeof</span> arg <span class="keyword">is</span> <span class="string">"function"</span>
+    arg()
+  <span class="keyword">else</span>
+    arg
+
+<span class="function"><span class="title">splat</span></span> = (item) -&gt;
+  results = []
+
+  <span class="keyword">if</span> <span class="keyword">typeof</span> item.forEach <span class="keyword">is</span> <span class="string">"function"</span>
+    item.forEach (i) -&gt;
+      results.push i
+  <span class="keyword">else</span>
+    result = get item
+
+    results.push result <span class="keyword">if</span> result?
+
+  results
+
+<span class="function"><span class="title">last</span></span> = (array) -&gt;
+  array[array.length - <span class="number">1</span>]
+
+<span class="function"><span class="title">flatten</span></span> = (array) -&gt;
+  array.reduce (a, b) -&gt;
+    a.concat(b)
+  , []</code></pre>
 </div>
         </li>
         

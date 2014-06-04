@@ -194,16 +194,18 @@ The extend method adds one objects properties to another.
 Super hax for computing dependencies. This needs to be a shared global so that
 different bundled versions of observable libraries can interoperate.
 
-    global.OBSERVABLE_ROOT_HACK = undefined
+    global.OBSERVABLE_ROOT_HACK = []
+
+    autoDeps = ->
+      last(global.OBSERVABLE_ROOT_HACK)
 
     magicDependency = (self) ->
-      if observerStack = global.OBSERVABLE_ROOT_HACK
+      if observerStack = autoDeps()
         observerStack.push self
 
     withBase = (self, update, fn) ->
-      if global.OBSERVABLE_ROOT_HACK
-        throw "TODO: Can currently only resolve one layer of dependencies at a time"
-      deps = global.OBSERVABLE_ROOT_HACK = []
+      global.OBSERVABLE_ROOT_HACK.push(deps = [])
+
       try
         value = fn()
         self._deps?.forEach (observable) ->
@@ -214,7 +216,7 @@ different bundled versions of observable libraries can interoperate.
         deps.forEach (observable) ->
           observable.observe update
       finally
-        global.OBSERVABLE_ROOT_HACK = undefined
+        global.OBSERVABLE_ROOT_HACK.pop()
 
       return value
 

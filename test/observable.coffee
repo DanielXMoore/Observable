@@ -327,3 +327,39 @@ describe "Observable functions", ->
       item "yolo"
 
       assert.equal observableArray()[1], "yolo"
+
+    it "should have a push method", ->
+      observableArray = Observable.concat()
+
+      observable = Observable "hey"
+
+      observableArray.push observable
+
+      assert.equal observableArray()[0], "hey"
+
+      observable "wat"
+
+      assert.equal observableArray()[0], "wat"
+
+      observableArray.push "cool"
+      observableArray.push "radical"
+
+      assert.equal observableArray().length, 3
+
+    it "should be observable", (done) ->
+      observableArray = Observable.concat()
+
+      observableArray.observe (items) ->
+        assert.equal items.length, 3
+        done()
+
+      observableArray.push ["A", "B", "C"]
+
+    it "should have an each method", ->
+      observableArray = Observable.concat(["A", "B", "C"])
+
+      n = 0
+      observableArray.each () ->
+        n += 1
+
+      assert.equal n, 3

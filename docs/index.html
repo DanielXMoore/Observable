@@ -339,16 +339,18 @@ Observable.<span class="function"><span class="title">concat</span></span> = (ar
 different bundled versions of observable libraries can interoperate.</p>
 
             </div>
-            <div class="content"><pre><code class="lang-coffeescript">global.OBSERVABLE_ROOT_HACK = <span class="literal">undefined</span>
+            <div class="content"><pre><code class="lang-coffeescript">global.OBSERVABLE_ROOT_HACK = []
+
+<span class="function"><span class="title">autoDeps</span></span> = -&gt;
+  last(global.OBSERVABLE_ROOT_HACK)
 
 <span class="function"><span class="title">magicDependency</span></span> = (self) -&gt;
-  <span class="keyword">if</span> observerStack = global.OBSERVABLE_ROOT_HACK
+  <span class="keyword">if</span> observerStack = autoDeps()
     observerStack.push self
 
 <span class="function"><span class="title">withBase</span></span> = (self, update, fn) -&gt;
-  <span class="keyword">if</span> global.OBSERVABLE_ROOT_HACK
-    <span class="keyword">throw</span> <span class="string">"TODO: Can currently only resolve one layer of dependencies at a time"</span>
-  deps = global.OBSERVABLE_ROOT_HACK = []
+  global.OBSERVABLE_ROOT_HACK.push(deps = [])
+
   <span class="keyword">try</span>
     value = fn()
     self._deps?.forEach (observable) -&gt;
@@ -359,7 +361,7 @@ different bundled versions of observable libraries can interoperate.</p>
     deps.forEach (observable) -&gt;
       observable.observe update
   <span class="keyword">finally</span>
-    global.OBSERVABLE_ROOT_HACK = <span class="literal">undefined</span>
+    global.OBSERVABLE_ROOT_HACK.pop()
 
   <span class="keyword">return</span> value</code></pre>
 </div>

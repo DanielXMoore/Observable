@@ -1,6 +1,6 @@
 {
   "name": "o_0",
-  "version": "0.2.0-pre.7",
+  "version": "0.2.0",
   "devDependencies": {
     "coffee-script": "~1.6.3",
     "mocha": "~1.12.0",

@@ -1,0 +1,29 @@
+{
+  "name": "observable",
+  "version": "0.2.0-pre.2",
+  "scripts": {
+    "prepublish": "script/prepublish",
+    "test": "script/test"
+  },
+  "files": [
+    "dist/"
+  ],
+  "main": "main.js",
+  "description": "Fresh and intellegent observables",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/distri/observable.git"
+  },
+  "keywords": [
+    "observable"
+  ],
+  "author": "Daniel X. Moore",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/distri/observable/issues"
+  },
+  "homepage": "https://github.com/distri/observable"
+}

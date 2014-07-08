@@ -157,6 +157,59 @@ describe "Observable functions", ->
 
     lastName "Bro"
 
+  it "should compute array#get as a dependency", ->
+    observableArray = Observable [0, 1, 2]
+
+    observableFn = Observable ->
+      observableArray.get(0)
+
+    assert.equal observableFn(), 0
+
+    observableArray([5])
+
+    assert.equal observableFn(), 5
+
+  it "should compute array#first as a dependency", ->
+    observableArray = Observable [0, 1, 2]
+
+    observableFn = Observable ->
+      observableArray.first() + 1
+
+    assert.equal observableFn(), 1
+
+    observableArray([5])
+
+    assert.equal observableFn(), 6
+
+  it "should compute array#last as a dependency", ->
+    observableArray = Observable [0, 1, 2]
+
+    observableFn = Observable ->
+      observableArray.last()
+
+    assert.equal observableFn(), 2
+
+    observableArray.pop()
+
+    assert.equal observableFn(), 1
+
+    observableArray([5])
+
+    assert.equal observableFn(), 5
+
+  it "should compute array#size as a dependency", ->
+    observableArray = Observable [0, 1, 2]
+
+    observableFn = Observable ->
+      observableArray.size() * 2
+
+    assert.equal observableFn(), 6
+
+    observableArray.pop()
+    assert.equal observableFn(), 4
+    observableArray.shift()
+    assert.equal observableFn(), 2
+
   it "should allow double nesting", (done) ->
     bottom = Observable "rad"
     middle = Observable ->

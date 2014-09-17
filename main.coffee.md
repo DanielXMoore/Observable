@@ -134,13 +134,20 @@ Remove an element from the array and notify observers of changes.
               notifyReturning value.splice(index, 1)[0]
 
           get: (index) ->
+            magicDependency(self)
             value[index]
 
           first: ->
+            magicDependency(self)
             value[0]
 
           last: ->
+            magicDependency(self)
             value[value.length-1]
+
+          size: ->
+            magicDependency(self)
+            value.length
 
       extend self,
         listeners: listeners

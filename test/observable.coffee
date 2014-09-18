@@ -354,6 +354,30 @@ describe "Observable functions", ->
       model.lastName "Bro"
 
   describe "concat", ->
+    it "should work with a single observable", ->
+      observable = Observable "something"
+      observableArray = Observable.concat observable
+      assert.equal observableArray.last(), "something"
+
+      observable "something else"
+      assert.equal observableArray.last(), "something else"
+
+    it "should work with an undefined observable", ->
+      observable = Observable undefined
+      observableArray = Observable.concat observable
+      assert.equal observableArray.size(), 0
+
+      observable "defined"
+      assert.equal observableArray.size(), 1
+
+    it "should work with undefined", ->
+      observableArray = Observable.concat undefined
+      assert.equal observableArray.size(), 0
+
+    it "should work with []", ->
+      observableArray = Observable.concat []
+      assert.equal observableArray.size(), 0
+
     it "should return an observable array that changes based on changes in inputs", ->
       numbers = Observable [1, 2, 3]
       letters = Observable ["a", "b", "c"]

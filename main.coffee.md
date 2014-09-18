@@ -253,6 +253,8 @@ Remove a value from an array.
     splat = (item) ->
       results = []
 
+      return results unless item?
+
       if typeof item.forEach is "function"
         item.forEach (i) ->
           results.push i

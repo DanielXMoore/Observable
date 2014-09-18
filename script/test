@@ -3,5 +3,6 @@
 node_modules/.bin/mocha \
   --compilers coffee:coffee-script \
   --reporter spec \
+  --require coffee-script/register \
   --require test/setup.coffee.md \
   "$@"

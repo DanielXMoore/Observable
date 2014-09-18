@@ -1,0 +1,10 @@
+#!/usr/bin/env coffee
+
+fs = require "fs"
+
+["component", "bower"].forEach (name) ->
+  fileName = "../component/#{name}"
+  json = require fileName
+
+  json.version = process.argv[2]
+  fs.writeFileSync "./component/#{name}.json", JSON.stringify(json, null, 2) + "\n"

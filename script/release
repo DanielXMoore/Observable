@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+cd component && git pull && cd ..
+
+VERSION=`echo "console.log(require('./package').version)" | node`
+script/update_version $VERSION
+
+script/prepublish && script/test
+
+cp dist/main.js component
+
+cd component
+git commit -am "Version $VERSION"
+git tag -a "dist-v$VERSION" -m "Version $VERSION"
+git push
+git push --tags

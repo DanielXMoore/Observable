@@ -40,11 +40,6 @@ same way we depend on other types of observables.
 
           return value
 
-        self.each = (args...) ->
-          magicDependency(self)
-
-          splat(value).forEach(args...)
-
         changed = ->
           value = computeDependencies(self, fn, changed, context)
           notify(value)
@@ -78,6 +73,8 @@ This `each` iterator is similar to [the Maybe monad](http://en.wikipedia.org/wik
 
         if value?
           [value].forEach(args...)
+
+        return self
 
 If the value is an array then proxy array methods and add notifications to mutation events.
 

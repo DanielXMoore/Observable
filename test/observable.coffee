@@ -17,6 +17,14 @@ describe 'Observable', ->
 
     observable("4life")
 
+  it "should not fire when setting to the same value", ->
+    o = Observable 5
+
+    o.observe ->
+      assert false
+
+    o(5)
+
   it 'should be idempotent', ->
     o = Observable(5)
 
@@ -91,6 +99,11 @@ describe 'Observable', ->
 
     observable.toggle()
 
+  it "should have a nice toString", ->
+    observable = Observable 5
+
+    assert.equal observable.toString(), "Observable(5)"
+
 describe "Observable Array", ->
   it "should proxy array methods", ->
     o = Observable [5]
@@ -138,6 +151,11 @@ describe "Observable Array", ->
       , 0
 
     assert.equal o.remove(2), 2
+
+  it "#remove non-existent element", ->
+    o = Observable [1, 2, 3]
+
+    assert.equal o.remove(0), undefined
 
   # TODO: This looks like it might be impossible
   it "should proxy the length property"
@@ -268,7 +286,7 @@ describe "Observable functions", ->
   it "should have an each method", ->
     o = Observable ->
 
-    assert o.each
+    assert o.each()
 
   it "should not invoke when returning undefined", ->
     o = Observable ->

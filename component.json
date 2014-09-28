@@ -1,6 +1,6 @@
 {
   "name": "observable",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "scripts": {
     "prepublish": "script/prepublish",
     "test": "script/test"

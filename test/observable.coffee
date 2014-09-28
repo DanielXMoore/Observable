@@ -50,6 +50,25 @@ describe 'Observable', ->
 
       assert.equal called, 0
 
+    it "should have the correct `this` scope for items", (done) ->
+      o = Observable 5
+
+      o.each ->
+        assert.equal this, 5
+        done()
+
+    it "should have the correct `this` scope for items in observable arrays", ->
+      scopes = []
+
+      o = Observable ["I'm", "an", "array"]
+
+      o.each ->
+        scopes.push this
+
+      assert.equal scopes[0], "I'm"
+      assert.equal scopes[1], "an"
+      assert.equal scopes[2], "array"
+
   it "should allow for stopping observation", ->
     observable = Observable("string")
 
@@ -470,3 +489,24 @@ describe "Observable functions", ->
         n += 1
 
       assert.equal n, 3
+
+  describe "nesting dependencies", ->
+    it "should update the correct observable", ->
+      a = Observable "a"
+      b = Observable "b"
+
+      results = Observable ->
+        r = Observable.concat()
+
+        r.push a
+        r.push b
+
+        r
+
+      # TODO: Should this just be
+      #     results.first()
+      assert.equal results().first(), "a"
+
+      a("newA")
+
+      assert.equal results().first(), "newA"

@@ -68,11 +68,12 @@ The value is always returned.
 
 This `each` iterator is similar to [the Maybe monad](http://en.wikipedia.org/wiki/Monad_&#40;functional_programming&#41;#The_Maybe_monad) in that our observable may contain a single value or nothing at all.
 
-      self.each = (args...) ->
+      self.each = (callback) ->
         magicDependency(self)
 
         if value?
-          [value].forEach(args...)
+          [value].forEach (item) ->
+            callback.call(item, item)
 
         return self
 
@@ -117,8 +118,9 @@ If the value is an array then proxy array methods and add notifications to mutat
 Add some extra helpful methods to array observables.
 
         extend self,
-          each: (args...) ->
-            self.forEach(args...)
+          each: (callback) ->
+            self.forEach (item, index) ->
+              callback.call(item, item, index, self)
 
             return self
 

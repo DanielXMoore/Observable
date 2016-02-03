@@ -44,7 +44,7 @@ same way we depend on other types of observables.
           value = computeDependencies(self, fn, changed, context)
           notify(value)
 
-        value = computeDependencies(self, fn, changed, context)
+        changed()
 
       else
 
@@ -109,6 +109,13 @@ If the value is an array then proxy array methods and add notifications to mutat
         ].forEach (method) ->
           self[method] = (args...) ->
             notifyReturning value[method](args...)
+
+        Object.defineProperty self, 'length',
+          get: ->
+            value.length
+          set: (length) ->
+            value.length = length
+            notifyReturning(value.length)
 
         notifyReturning = (returnValue) ->
           notify(value)
@@ -202,27 +209,28 @@ different bundled versions of observable libraries can interoperate.
 
     global.OBSERVABLE_ROOT_HACK = []
 
-    autoDeps = ->
-      last(global.OBSERVABLE_ROOT_HACK)
-
     magicDependency = (self) ->
-      if observerStack = autoDeps()
-        observerStack.push self
+      observerSet = last(global.OBSERVABLE_ROOT_HACK)
+      if observerSet
+        observerSet.add self
 
     withBase = (self, update, fn) ->
-      global.OBSERVABLE_ROOT_HACK.push(deps = [])
+      deps = new Set
+
+      global.OBSERVABLE_ROOT_HACK.push(deps)
 
       try
         value = fn()
-        self._deps?.forEach (observable) ->
-          observable.stopObserving update
-
-        self._deps = deps
-
-        deps.forEach (observable) ->
-          observable.observe update
       finally
         global.OBSERVABLE_ROOT_HACK.pop()
+
+      self._deps?.forEach (observable) ->
+        observable.stopObserving update
+
+      self._deps = deps
+
+      deps.forEach (observable) ->
+        observable.observe update
 
       return value
 

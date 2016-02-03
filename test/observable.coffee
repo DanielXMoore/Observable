@@ -176,8 +176,20 @@ describe "Observable Array", ->
 
     assert.equal o.remove(0), undefined
 
-  # TODO: This looks like it might be impossible
-  it "should proxy the length property"
+  it "should proxy the length property", ->
+    o = Observable [1, 2, 3]
+
+    assert.equal o.length, 3
+
+    called = false
+    o.observe (value) ->
+      assert.equal value[0], 1
+      assert.equal value[1], undefined
+      called = true
+
+    o.length = 1
+    assert.equal o.length, 1
+    assert.equal called, true
 
 describe "Observable functions", ->
   it "should compute dependencies", (done) ->
@@ -360,6 +372,22 @@ describe "Observable functions", ->
 
     assert.equal first.checked(), false
     assert.equal second.checked(), true
+
+  it "shouldn't double count dependencies", ->
+    dep = Observable "yo"
+
+    o = Observable ->
+      dep()
+      dep()
+      dep()
+
+    count = 0
+    o.observe ->
+      count += 1
+
+    dep('heyy')
+
+    assert.equal count, 1
 
   it "should work with nested observable construction", ->
     gen = Observable ->

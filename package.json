@@ -1,6 +1,6 @@
 {
   "name": "o_0",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "devDependencies": {
     "browserify": "~2.26.0",
     "coffee-script": "~1.8.0",

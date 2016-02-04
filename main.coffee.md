@@ -112,6 +112,7 @@ If the value is an array then proxy array methods and add notifications to mutat
 
         Object.defineProperty self, 'length',
           get: ->
+            magicDependency(self)
             value.length
           set: (length) ->
             value.length = length

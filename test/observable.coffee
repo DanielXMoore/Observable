@@ -191,6 +191,25 @@ describe "Observable Array", ->
     assert.equal o.length, 1
     assert.equal called, true
 
+  it "should auto detect conditionals of length as a dependency", ->
+    observableArray = Observable [1, 2, 3]
+
+    o = Observable ->
+      if observableArray.length > 5
+        true
+      else
+        false
+
+    assert.equal o(), false
+
+    called = 0
+    o.observe ->
+      called += 1
+
+    observableArray.push 4, 5, 6
+
+    assert.equal called, 1
+
 describe "Observable functions", ->
   it "should compute dependencies", (done) ->
     firstName = Observable "Duder"

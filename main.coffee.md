@@ -40,11 +40,8 @@ same way we depend on other types of observables.
 
           return value
 
-        changed = ->
-          value = computeDependencies(self, fn, changed, context)
-          notify(value)
-
-        changed()
+        value = computeDependencies(self, fn, changed, context)
+        notify(value)
 
       else
 
@@ -215,13 +212,15 @@ different bundled versions of observable libraries can interoperate.
       if observerSet
         observerSet.add self
 
-    withBase = (self, update, fn) ->
+Automagically compute dependencies.
+
+    computeDependencies = (self, fn, update, context) ->
       deps = new Set
 
       global.OBSERVABLE_ROOT_HACK.push(deps)
 
       try
-        value = fn()
+        value = fn.call(context)
       finally
         global.OBSERVABLE_ROOT_HACK.pop()
 
@@ -234,12 +233,6 @@ different bundled versions of observable libraries can interoperate.
         observable.observe update
 
       return value
-
-Automagically compute dependencies.
-
-    computeDependencies = (self, fn, update, context) ->
-      withBase self, update, ->
-        fn.call(context)
 
 Remove a value from an array.
 

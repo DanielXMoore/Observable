@@ -40,8 +40,11 @@ same way we depend on other types of observables.
 
           return value
 
-        value = computeDependencies(self, fn, changed, context)
-        notify(value)
+        changed = ->
+          value = computeDependencies(self, fn, changed, context)
+          notify(value)
+
+        changed()
 
       else
 

@@ -110,13 +110,14 @@ If the value is an array then proxy array methods and add notifications to mutat
           self[method] = (args...) ->
             notifyReturning value[method](args...)
 
-        Object.defineProperty self, 'length',
-          get: ->
-            magicDependency(self)
-            value.length
-          set: (length) ->
-            value.length = length
-            notifyReturning(value.length)
+        try # Provide length on a best effort basis because older browsers choke
+          Object.defineProperty self, 'length',
+            get: ->
+              magicDependency(self)
+              value.length
+            set: (length) ->
+              value.length = length
+              notifyReturning(value.length)
 
         notifyReturning = (returnValue) ->
           notify(value)

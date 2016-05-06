@@ -7,7 +7,7 @@ Function dependencies are automagically observed.
 
 Standard array methods are proxied through to the underlying array.
 
-    Observable = (value, context) ->
+    module.exports = Observable = (value, context) ->
 
 Return the object if it is already an observable object.
 
@@ -110,7 +110,8 @@ If the value is an array then proxy array methods and add notifications to mutat
           self[method] = (args...) ->
             notifyReturning value[method](args...)
 
-        try # Provide length on a best effort basis because older browsers choke
+        # Provide length on a best effort basis because older browsers choke
+        if PROXY_LENGTH
           Object.defineProperty self, 'length',
             get: ->
               magicDependency(self)
@@ -180,29 +181,33 @@ Remove an element from the array and notify observers of changes.
 
       return self
 
-    Observable.concat = (args...) ->
-      args = Observable(args)
+    Observable.concat = ->
+      # Optimization: Manually copy arguments to an array
+      args = new Array(arguments.length)
+      for arg, i in arguments
+        args[i] = arguments[i]
+
+      collection = Observable(args)
 
       o = Observable ->
-        flatten args.map(splat)
+        flatten collection.map(splat)
 
-      o.push = args.push
+      o.push = collection.push
 
       return o
-
-Export `Observable`
-
-    module.exports = Observable
 
 Appendix
 --------
 
-The extend method adds one objects properties to another.
+The extend method adds one object's properties to another.
 
-    extend = (target, sources...) ->
-      for source in sources
-        for name of source
-          target[name] = source[name]
+    extend = (target) ->
+      # Optimization: iterate through arguments manually rather than pass to slice to create an array
+      for source, i in arguments
+        # The first argument is target, so skip it
+        if i > 0
+          for name of source
+            target[name] = source[name]
 
       return target
 
@@ -216,6 +221,14 @@ different bundled versions of observable libraries can interoperate.
       if observerSet
         observerSet.add self
 
+Optimization: Keep the function containing the try-catch as small as possible.
+
+    tryCallWithFinallyPop = (fn, context) ->
+      try
+        fn.call(context)
+      finally
+        global.OBSERVABLE_ROOT_HACK.pop()
+
 Automagically compute dependencies.
 
     computeDependencies = (self, fn, update, context) ->
@@ -223,10 +236,7 @@ Automagically compute dependencies.
 
       global.OBSERVABLE_ROOT_HACK.push(deps)
 
-      try
-        value = fn.call(context)
-      finally
-        global.OBSERVABLE_ROOT_HACK.pop()
+      value = tryCallWithFinallyPop fn, context
 
       self._deps?.forEach (observable) ->
         observable.stopObserving update
@@ -237,6 +247,17 @@ Automagically compute dependencies.
         observable.observe update
 
       return value
+
+Check if we can proxy function length property.
+
+    try
+      Object.defineProperty (->), 'length',
+        get: ->
+        set: ->
+
+      PROXY_LENGTH = true
+    catch
+      PROXY_LENGTH = false
 
 Remove a value from an array.
 

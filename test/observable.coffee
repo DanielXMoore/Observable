@@ -408,11 +408,42 @@ describe "Observable functions", ->
 
     assert.equal count, 1
 
+  it "should recompute the correct number of times", ->
+    joiner = Observable ","
+
+    items = Observable [
+      "A"
+      "B"
+      "C"
+    ]
+
+    called = 0
+    fn = Observable ->
+      called += 1
+      items.join joiner()
+
+    assert.equal fn(), "A,B,C"
+    assert.equal called, 1
+
+    items.push "D"
+    assert.equal fn(), "A,B,C,D"
+    assert.equal called, 2
+
+    joiner "."
+    assert.equal fn(), "A.B.C.D"
+    assert.equal called, 3
+
+    items.push "E"
+    assert.equal fn(), "A.B.C.D.E"
+    assert.equal called, 4
+
   it "should work with nested observable construction", ->
     gen = Observable ->
       Observable "Duder"
 
     o = gen()
+    o2 = gen()
+    assert.equal o, o2
 
     assert.equal o(), "Duder"
 

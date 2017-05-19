@@ -170,10 +170,10 @@ Remove an element from the array and notify observers of changes.
         toggle: ->
           self !value
 
-        increment: (n) ->
+        increment: (n=1) ->
           self value + n
 
-        decrement: (n) ->
+        decrement: (n=1) ->
           self value - n
 
         toString: ->

@@ -30,45 +30,6 @@ describe 'Observable', ->
 
     assert.equal o, Observable(o)
 
-  describe "#each", ->
-    it "should be invoked once if there is an observable", ->
-      o = Observable(5)
-      called = 0
-
-      o.each (value) ->
-        called += 1
-        assert.equal value, 5
-
-      assert.equal called, 1
-
-    it "should not be invoked if observable is null", ->
-      o = Observable(null)
-      called = 0
-
-      o.each (value) ->
-        called += 1
-
-      assert.equal called, 0
-
-    it "should have the correct `this` scope for items", (done) ->
-      o = Observable 5
-
-      o.each ->
-        assert.equal this, 5
-        done()
-
-    it "should have the correct `this` scope for items in observable arrays", ->
-      scopes = []
-
-      o = Observable ["I'm", "an", "array"]
-
-      o.each ->
-        scopes.push this
-
-      assert.equal scopes[0], "I'm"
-      assert.equal scopes[1], "an"
-      assert.equal scopes[2], "array"
-
   it "should allow for stopping observation", ->
     observable = Observable("string")
 
@@ -91,15 +52,19 @@ describe 'Observable', ->
     observable = Observable 1
 
     observable.increment(5)
-
     assert.equal observable(), 6
+
+    observable.increment()
+    assert.equal observable(), 7
 
   it "should decremnet", ->
     observable = Observable 1
 
     observable.decrement 5
-
     assert.equal observable(), -4
+
+    observable.decrement()
+    assert.equal observable(), -5
 
   it "should toggle", ->
     observable = Observable false
@@ -139,11 +104,6 @@ describe "Observable Array", ->
     o.push 1
 
     done()
-
-  it "should have an each method", ->
-    o = Observable []
-
-    assert o.each
 
   it "#get", ->
     o = Observable [0, 1, 2, 3]
@@ -333,24 +293,6 @@ describe "Observable functions", ->
     # checking it directly
     assert.equal global.OBSERVABLE_ROOT_HACK.length, 0
 
-  it "should have an each method", ->
-    o = Observable ->
-
-    assert o.each()
-
-  it "should not invoke when returning undefined", ->
-    o = Observable ->
-
-    o.each ->
-      assert false
-
-  it "should invoke when returning any defined value", (done) ->
-    o = Observable -> 5
-
-    o.each (n) ->
-      assert.equal n, 5
-      done()
-
   it "should work on an array dependency", ->
     oA = Observable [1, 2, 3]
 
@@ -467,124 +409,3 @@ describe "Observable functions", ->
         done()
 
       model.lastName "Bro"
-
-  describe "concat", ->
-    it "should work with a single observable", ->
-      observable = Observable "something"
-      observableArray = Observable.concat observable
-      assert.equal observableArray.last(), "something"
-
-      observable "something else"
-      assert.equal observableArray.last(), "something else"
-
-    it "should work with an undefined observable", ->
-      observable = Observable undefined
-      observableArray = Observable.concat observable
-      assert.equal observableArray.size(), 0
-
-      observable "defined"
-      assert.equal observableArray.size(), 1
-
-    it "should work with undefined", ->
-      observableArray = Observable.concat undefined
-      assert.equal observableArray.size(), 0
-
-    it "should work with []", ->
-      observableArray = Observable.concat []
-      assert.equal observableArray.size(), 0
-
-    it "should return an observable array that changes based on changes in inputs", ->
-      numbers = Observable [1, 2, 3]
-      letters = Observable ["a", "b", "c"]
-      item = Observable({})
-      nullable = Observable null
-
-      observableArray = Observable.concat numbers, "literal", letters, item, nullable
-
-      assert.equal observableArray().length, 3 + 1 + 3 + 1
-
-      assert.equal observableArray()[0], 1
-      assert.equal observableArray()[3], "literal"
-      assert.equal observableArray()[4], "a"
-      assert.equal observableArray()[7], item()
-
-      numbers.push 4
-
-      assert.equal observableArray().length, 9
-
-      nullable "cool"
-
-      assert.equal observableArray().length, 10
-
-    it "should work with observable functions that return arrays", ->
-      item = Observable("wat")
-
-      computedArray = Observable ->
-        [item()]
-
-      observableArray = Observable.concat computedArray, computedArray
-
-      assert.equal observableArray().length, 2
-
-      assert.equal observableArray()[1], "wat"
-
-      item "yolo"
-
-      assert.equal observableArray()[1], "yolo"
-
-    it "should have a push method", ->
-      observableArray = Observable.concat()
-
-      observable = Observable "hey"
-
-      observableArray.push observable
-
-      assert.equal observableArray()[0], "hey"
-
-      observable "wat"
-
-      assert.equal observableArray()[0], "wat"
-
-      observableArray.push "cool"
-      observableArray.push "radical"
-
-      assert.equal observableArray().length, 3
-
-    it "should be observable", (done) ->
-      observableArray = Observable.concat()
-
-      observableArray.observe (items) ->
-        assert.equal items.length, 3
-        done()
-
-      observableArray.push ["A", "B", "C"]
-
-    it "should have an each method", ->
-      observableArray = Observable.concat(["A", "B", "C"])
-
-      n = 0
-      observableArray.each () ->
-        n += 1
-
-      assert.equal n, 3
-
-  describe "nesting dependencies", ->
-    it "should update the correct observable", ->
-      a = Observable "a"
-      b = Observable "b"
-
-      results = Observable ->
-        r = Observable.concat()
-
-        r.push a
-        r.push b
-
-        r
-
-      # TODO: Should this just be
-      #     results.first()
-      assert.equal results().first(), "a"
-
-      a("newA")
-
-      assert.equal results().first(), "newA"

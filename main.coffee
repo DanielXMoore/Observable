@@ -122,12 +122,6 @@ module.exports = Observable = (value, context) ->
 
     # Extra methods for array observables
     extend self,
-      each: (callback) ->
-        self.forEach (item, index) ->
-          callback.call(item, item, index, self)
-
-        return self
-
       # Remove an element from the array and notify observers of changes.
       remove: (object) ->
         index = value.indexOf(object)
@@ -200,16 +194,6 @@ tryCallWithFinallyPop = (observableDependencies, fn, context) ->
     global.OBSERVABLE_ROOT_HACK.pop()
 
 
-# Check if we can proxy function length property.
-try
-  Object.defineProperty (->), 'length',
-    get: ->
-    set: ->
-
-  PROXY_LENGTH = true
-catch
-  PROXY_LENGTH = false
-
 remove = (array, value) ->
   index = array.indexOf(value)
 
@@ -222,9 +206,14 @@ copy = (array) ->
 last = (array) ->
   array[array.length - 1]
 
-flatten = (array) ->
-  array.reduce (a, b) ->
-    a.concat(b)
-  , []
-
 noop = ->
+
+# Check if we can proxy function length property.
+try
+  Object.defineProperty (->), 'length',
+    get: noop
+    set: noop
+
+  PROXY_LENGTH = true
+catch
+  PROXY_LENGTH = false

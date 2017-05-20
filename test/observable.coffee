@@ -30,6 +30,10 @@ describe 'Observable', ->
 
     assert.equal o, Observable(o)
 
+  it "should have releaseDependencies as a noop because primitive observables don't have any dependencies", ->
+    o = Observable(5)
+    o.releaseDependencies()
+
   it "should allow for stopping observation", ->
     observable = Observable("string")
 
@@ -47,6 +51,10 @@ describe 'Observable', ->
     observable("wat")
 
     assert.equal called, 1
+
+  it "should do nothing when removing a listener that's not present", ->
+    observable = Observable("string")
+    observable.stopObserving ->
 
   it "should increment", ->
     observable = Observable 1
@@ -120,16 +128,13 @@ describe "Observable Array", ->
 
     assert.equal o.last(), 3
 
-  it "#remove", (done) ->
+  it "#remove", ->
     o = Observable [0, 1, 2, 3]
 
-    o.observe (newValue) ->
-      assert.equal newValue.length, 3
-      setTimeout ->
-        done()
-      , 0
-
     assert.equal o.remove(2), 2
+    assert.equal o.length, 3
+    assert.equal o.remove(-5), undefined
+    assert.equal o.length, 3
 
   it "#remove non-existent element", ->
     o = Observable [1, 2, 3]
@@ -393,19 +398,18 @@ describe "Observable functions", ->
 
     assert.equal o(), "wat"
 
-  describe "Scoping", ->
-    it "should be scoped to optional context", (done) ->
-      model =
-        firstName: Observable "Duder"
-        lastName: Observable "Man"
+  it "should be scoped to optional context", (done) ->
+    model =
+      firstName: Observable "Duder"
+      lastName: Observable "Man"
 
-      model.name = Observable ->
-        "#{@firstName()} #{@lastName()}"
-      , model
+    model.name = Observable ->
+      "#{@firstName()} #{@lastName()}"
+    , model
 
-      model.name.observe (newValue) ->
-        assert.equal newValue, "Duder Bro"
+    model.name.observe (newValue) ->
+      assert.equal newValue, "Duder Bro"
 
-        done()
+      done()
 
-      model.lastName "Bro"
+    model.lastName "Bro"

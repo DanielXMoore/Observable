@@ -146,6 +146,55 @@ module.exports = Observable = (value, context) ->
       size: ->
         magicDependency(self)
         value.length
+  if Object::toString.call(value) is '[object Object]'
+      # proxy object properties and add notifications to mutation events
+      defProp = (property) ->
+        Object.defineProperty self, property,
+          get: ->
+            magicDependency(self)
+            # if object property is Observable, e.g obj = Observable { a: Observable 1 }
+            if typeof value[property]?.observe is "function"
+              value[property]()
+            else
+              value[property]
+          set: (val) ->
+            # if object property is Observable, e.g obj = Observable { a: Observable 1 }
+            if typeof value[property]?.observe is "function"
+              value[property] val
+            else
+              value[property] = val
+              notify value
+
+      defProp prop for own prop of value
+
+      # Proxy object methods, e.g. Object.keys(obj)
+      [
+        "keys"
+        "values"
+        "entries"
+      ].forEach (method) ->
+        Object.defineProperty self, method,
+          get: ->
+            magicDependency(self)
+            Object[method] value
+
+      # Extra methods for object observables
+      extend self,
+        # Remove an element from the object and notify observers of changes.
+        remove: (object) ->
+          if returnValue = value[object]
+            delete value[object]
+            notify(value)
+            return returnValue
+
+        extend: (obj) ->
+          magicDependency(self)
+          value = Object.assign {}, value, obj
+          defProp prop for own prop of obj
+          notify value
+
+      # alias
+      self.assign = self.extend
 
   extend self,
     listeners: listeners

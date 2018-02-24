@@ -413,3 +413,66 @@ describe "Observable functions", ->
       done()
 
     model.lastName "Bro"
+
+describe "Observable object", ->
+  it "should proxy properties", ->
+    obj = Observable
+      a: 1
+
+    assert.equal obj.a, 1
+    assert.equal obj().a, obj.a
+
+    obj.a = 2
+
+    assert.equal obj.a, 2
+    assert.equal obj().a, obj.a
+
+  it "should work with observable properties", ->
+    obj = Observable
+      a: Observable 1
+
+    assert.equal obj.a, 1
+    assert.equal obj().a(), obj.a
+
+    obj().a 2
+
+    assert.equal obj.a, 2
+    assert.equal obj().a(), obj.a
+
+    obj.a = 3
+
+    assert.equal obj.a, 3
+    assert.equal obj().a(), obj.a
+
+  it "should compute object#extend as a dependency", ->
+    obj = Observable
+      a: 1
+
+    obj.extend b: 2
+
+    assert.equal obj.b, 2
+    assert.equal obj().b, obj.b
+
+    # alias
+    obj.assign c: 3
+
+    assert.equal obj.c, 3
+    assert.equal obj().c, obj.c
+
+  it "should compute object#remove as a dependency", ->
+    obj = Observable
+      a: 1
+      b: 2
+
+    obj.remove "b"
+
+    assert.equal obj.b, undefined
+
+  it "should proxy object methods", ->
+    obj = Observable
+      a: 1
+      b: 2
+
+    assert.deepEqual obj.keys, ["a", "b"]
+    assert.deepEqual obj.values, [1, 2]
+    assert.deepEqual obj.entries, [["a", 1], ["b", 2]]

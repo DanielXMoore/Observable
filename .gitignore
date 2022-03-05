@@ -1,0 +1,4 @@
+.nyc_output/
+coverage/
+main.js
+node_modules/

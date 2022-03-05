@@ -1,0 +1,66 @@
+{
+  "name": "@danielx/observable",
+  "version": "0.5.0-pre.0",
+  "devDependencies": {
+    "@danielx/coffeecoverage": "4.0.0-pre.1",
+    "@types/mocha": "^9.1.0",
+    "browserify": "^17.0.0",
+    "coffeescript": "^2",
+    "mocha": "^9.2.0",
+    "nyc": "^15.1.0",
+    "typescript": "^4.6.2"
+  },
+  "mocha": {
+    "extension": [
+      "coffee"
+    ],
+    "require": [
+      "coffeescript/register",
+      "@danielx/coffeecoverage/register-istanbul"
+    ],
+    "reporter": "spec",
+    "recursive": true,
+    "spec": [
+      "test"
+    ]
+  },
+  "nyc": {
+    "check-coverage": true,
+    "branches": 100,
+    "lines": 100,
+    "functions": 100,
+    "statements": 100,
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "extension": [
+      ".coffee"
+    ],
+    "exclude": [],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "scripts": {
+    "prepare": "coffee --bare --compile --no-header main.coffee",
+    "test": "nyc mocha"
+  },
+  "files": [
+    "main.js"
+  ],
+  "main": "main.js",
+  "description": "Fresh and intellegent observables",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/DanielXMoore/Observable.git"
+  },
+  "keywords": [
+    "observable"
+  ],
+  "author": "Daniel X. Moore",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/distri/observable/issues"
+  },
+  "homepage": "https://github.com/distri/observable"
+}

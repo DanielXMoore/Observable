@@ -12,7 +12,7 @@ Standard array methods are proxied through to the underlying array.
 
 "use strict"
 
-module.exports = Observable = (value, context) ->
+module.exports = (value, context) ->
 
   # Return the object if it is already an observable object.
   return value if typeof value?.observe is "function"
@@ -20,6 +20,7 @@ module.exports = Observable = (value, context) ->
   # Maintain a set of listeners to observe changes and provide a helper to notify each observer.
   listeners = []
   notify = (newValue) ->
+    self._value = newValue
     copy(listeners).forEach (listener) ->
       listener(newValue)
 
@@ -45,8 +46,11 @@ module.exports = Observable = (value, context) ->
     # the new set of dependencies and unsubscribe from the old set.
     changed = ->
       observableDependencies = new Set
-
-      value = tryCallWithFinallyPop observableDependencies, fn, context
+      global.OBSERVABLE_ROOT_HACK.push(observableDependencies)
+      try
+        value = fn.call(context)
+      finally
+        global.OBSERVABLE_ROOT_HACK.pop()
 
       self.releaseDependencies()
       self._observableDependencies = observableDependencies
@@ -58,8 +62,10 @@ module.exports = Observable = (value, context) ->
     changed()
 
   else
-    # When called with zero arguments it is treated as a getter. When called with one argument it is treated as a setter.
-    # Changes to the value will trigger notifications. The value is always returned.
+    # When called with zero arguments it is treated as a getter.
+    # When called with one argument it is treated as a setter.
+    # Changes to the value will trigger notifications.
+    # The value is always returned.
     self = (newValue) ->
       if arguments.length > 0
         if value != newValue
@@ -74,6 +80,7 @@ module.exports = Observable = (value, context) ->
 
     # Non-computed observables have no dependencies, releasing them is a non-operation.
     self.releaseDependencies = noop
+    self._value = value
 
   # If the value is an array then proxy array methods and add notifications to mutation events.
   if Array.isArray(value)
@@ -109,19 +116,17 @@ module.exports = Observable = (value, context) ->
         notify(value)
         return returnValue
 
-    # Provide length on a best effort basis because older browsers choke
-    if PROXY_LENGTH
-      Object.defineProperty self, 'length',
-        get: ->
-          magicDependency(self)
-          value.length
-        set: (length) ->
-          returnValue = value.length = length
-          notify(value)
-          return returnValue
+    Object.defineProperty self, 'length',
+      get: ->
+        magicDependency(self)
+        value.length
+      set: (length) ->
+        returnValue = value.length = length
+        notify(value)
+        return returnValue
 
     # Extra methods for array observables
-    extend self,
+    Object.assign self,
       # Remove an element from the array and notify observers of changes.
       remove: (object) ->
         index = value.indexOf(object)
@@ -147,7 +152,7 @@ module.exports = Observable = (value, context) ->
         magicDependency(self)
         value.length
 
-  extend self,
+  Object.assign self,
     listeners: listeners
 
     observe: (listener) ->
@@ -160,10 +165,10 @@ module.exports = Observable = (value, context) ->
       self !value
 
     increment: (n=1) ->
-      self value + n
+      self Number(value) + n
 
     decrement: (n=1) ->
-      self value - n
+      self Number(value) - n
 
     toString: ->
       "Observable(#{value})"
@@ -173,26 +178,14 @@ module.exports = Observable = (value, context) ->
 # Appendix
 # --------
 
-extend = Object.assign
-
-# Super hax for computing dependencies. This needs to be a shared global so that different bundled versions of observable libraries can interoperate.
+# Super hax for computing dependencies. This needs to be a shared global so that
+# different bundled versions of observable libraries can interoperate.
 global.OBSERVABLE_ROOT_HACK = []
 
 magicDependency = (self) ->
   observerSet = last(global.OBSERVABLE_ROOT_HACK)
   if observerSet
     observerSet.add self
-
-
-# Optimization: Keep the function containing the try-catch as small as possible.
-tryCallWithFinallyPop = (observableDependencies, fn, context) ->
-  global.OBSERVABLE_ROOT_HACK.push(observableDependencies)
-
-  try
-    fn.call(context)
-  finally
-    global.OBSERVABLE_ROOT_HACK.pop()
-
 
 remove = (array, value) ->
   index = array.indexOf(value)
@@ -207,13 +200,3 @@ last = (array) ->
   array[array.length - 1]
 
 noop = ->
-
-# Check if we can proxy function length property.
-try
-  Object.defineProperty (->), 'length',
-    get: noop
-    set: noop
-
-  PROXY_LENGTH = true
-catch
-  PROXY_LENGTH = false

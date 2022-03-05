@@ -1,4 +1,5 @@
-global.Observable = require "../main"
+Observable = require "../main.coffee"
+assert = require "assert"
 
 describe 'Observable', ->
   it 'should create an observable for an object', ->
@@ -34,6 +35,27 @@ describe 'Observable', ->
     o = Observable(5)
     o.releaseDependencies()
 
+  it "should provide an updating non-observing semi-private reference to value", ->
+    o = Observable(5)
+    assert.equal o._value, 5
+
+    o 7
+    assert.equal o._value, 7
+
+    o2 = Observable ->
+      o._value
+    o3 = Observable ->
+      o()
+    assert.equal o2(), 7
+    assert.equal o3(), 7
+
+    o 9
+    assert.equal o2(), 7
+    assert.equal o2._value, 7
+    assert.equal o3(), 9
+    assert.equal o3._value, 9
+    assert.equal o._value, 9
+
   it "should allow for stopping observation", ->
     observable = Observable("string")
 
@@ -64,6 +86,12 @@ describe 'Observable', ->
 
     observable.increment()
     assert.equal observable(), 7
+
+    observable.increment(0.05)
+    assert.equal observable(), 7.05
+
+    observable.increment(0.05)
+    assert.equal observable(), 7.10
 
   it "should decremnet", ->
     observable = Observable 1
@@ -294,7 +322,7 @@ describe "Observable functions", ->
       t = Observable ->
         throw "wat"
 
-    # TODO: Should be able to find a test case that is affected by this rather that
+    # TODO: Should be able to find a test case that is affected by this rather than
     # checking it directly
     assert.equal global.OBSERVABLE_ROOT_HACK.length, 0
 

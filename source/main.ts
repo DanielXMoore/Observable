@@ -228,6 +228,7 @@ function addExtensions(o: ObservableValue<boolean | number | Array<unknown> | un
 
 module.exports = function<T>(value: T | (() => T), context?:Object) {
 
+  /* istanbul ignore next */
   if (typeof (value as ObservableValue<unknown>)?.observe === "function") {
     return value
   }

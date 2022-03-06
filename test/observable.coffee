@@ -31,6 +31,13 @@ describe 'Observable', ->
 
     assert.equal o, Observable(o)
 
+  it "should create an observbale for objects that have a non-function observe property", ->
+    o = Observable
+      observe: false
+
+    assert.deepEqual o(),
+      observe: false
+
   it "should have releaseDependencies as a noop because primitive observables don't have any dependencies", ->
     o = Observable(5)
     o.releaseDependencies()

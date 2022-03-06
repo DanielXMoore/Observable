@@ -324,7 +324,7 @@ describe "Observable functions", ->
 
     # TODO: Should be able to find a test case that is affected by this rather than
     # checking it directly
-    assert.equal global.OBSERVABLE_ROOT_HACK.length, 0
+    assert.equal Observable.OBSERVABLE_ROOT.length, 0
 
   it "should work on an array dependency", ->
     oA = Observable [1, 2, 3]

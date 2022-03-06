@@ -71,11 +71,11 @@ function ObservableFunction<T extends unknown>(
   changed = function() {
     var observableDependencies, value;
     observableDependencies = new Set();
-    global.OBSERVABLE_ROOT_HACK.push(observableDependencies);
+    OBSERVABLE_ROOT.push(observableDependencies);
     try {
       value = fn.call(context);
     } finally {
-      global.OBSERVABLE_ROOT_HACK.pop();
+      OBSERVABLE_ROOT.pop();
     }
     self.releaseDependencies();
     self._observableDependencies = observableDependencies;
@@ -103,7 +103,7 @@ function ObservableValue<T>(value:T) : ObservableValue<T> {
   // When called with one argument it is treated as a setter.
   // Changes to the value will trigger notifications.
   // The value is always returned.
-  const self = Object.assign(function (newValue:T) {
+  const self = Object.assign(function (newValue?:T) {
     if (arguments.length > 0) {
       if (value !== newValue) {
         value = newValue;
@@ -132,7 +132,7 @@ function ObservableValue<T>(value:T) : ObservableValue<T> {
   return self;
 };
 
-addExtensions = function(o) {
+function addExtensions(o) {
   var exts, v;
   v = o._value;
   exts = (function() {
@@ -264,3 +264,5 @@ function last<T extends unknown[]>(array:T): T[number] {
 }
 
 function noop():void {}
+
+module.exports.OBSERVABLE_ROOT = OBSERVABLE_ROOT;

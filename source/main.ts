@@ -15,7 +15,7 @@ Standard array methods are proxied through to the underlying array.
 interface ObservableValue<T> extends Observable {
   (): T
   (newValue:T): T
-  listeners: Function[]
+  listeners: Array<Function>
   notify: (newValue:T) => void
 }
 
@@ -24,9 +24,7 @@ interface Observable {
   stopObserving: (fn:Function) => void
 }
 
-var ObservableValue, addExtensions, emptySet;
-
-emptySet = new Set();
+const emptySet : Set<unknown> = new Set();
 
 function ObservableFunction<T extends unknown>(
   fn: ()=> T,
@@ -90,11 +88,12 @@ function ObservableFunction<T extends unknown>(
   return self;
 };
 
-ObservableValue = function<T>(value:T) {
-  var notify, self;
+function ObservableValue<T>(value:T) : ObservableValue<T> {
+
   // Maintain a set of listeners to observe changes and provide a helper to notify each observer.
   const listeners : Array<(x:T) => void> = [];
-  notify = function(newValue) {
+
+  function notify(newValue:T) {
     self._value = newValue;
     return copy(listeners).forEach(function(listener) {
       return listener(newValue);
@@ -104,7 +103,7 @@ ObservableValue = function<T>(value:T) {
   // When called with one argument it is treated as a setter.
   // Changes to the value will trigger notifications.
   // The value is always returned.
-  self = function(newValue) {
+  const self = Object.assign(function (newValue:T) {
     if (arguments.length > 0) {
       if (value !== newValue) {
         value = newValue;
@@ -115,8 +114,7 @@ ObservableValue = function<T>(value:T) {
       magicDependency(self);
     }
     return value;
-  };
-  Object.assign(self, {
+  }, {
     listeners: listeners,
     notify: notify,
     observe: function(listener) {
@@ -124,11 +122,13 @@ ObservableValue = function<T>(value:T) {
     },
     stopObserving: function(fn) {
       return remove(listeners, fn);
-    }
+    },
+    releaseDependencies: noop,
+    _value: value
   });
+
   // Non-computed observables have no dependencies, releasing them is a non-operation.
-  self.releaseDependencies = noop;
-  self._value = value;
+
   return self;
 };
 
@@ -236,13 +236,12 @@ module.exports = function(value, context) {
 // Appendix
 // --------
 
-// Super hax for computing dependencies. This needs to be a shared global so that
-// different bundled versions of observable libraries can interoperate.
-global.OBSERVABLE_ROOT_HACK = [];
+// Dropping support for simultaneous use of different versions
+const OBSERVABLE_ROOT : Array<Set<Observable>> = [];
 
-function magicDependency(self:Observable) {
+function magicDependency(self: Observable) {
   var observerSet;
-  observerSet = last(global.OBSERVABLE_ROOT_HACK);
+  observerSet = last(OBSERVABLE_ROOT);
   if (observerSet) {
     return observerSet.add(self);
   }

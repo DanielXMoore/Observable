@@ -1,4 +1,4 @@
-Observable = require "../main.coffee"
+Observable = require "../source/main"
 assert = require "assert"
 
 describe 'Observable', ->
@@ -262,7 +262,7 @@ describe "Observable functions", ->
     observableArray = Observable [0, 1, 2]
 
     observableFn = Observable ->
-      observableArray.size() * 2
+      observableArray.length * 2
 
     assert.equal observableFn(), 6
 

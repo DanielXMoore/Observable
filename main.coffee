@@ -12,11 +12,65 @@ Standard array methods are proxied through to the underlying array.
 
 "use strict"
 
-module.exports = (value, context) ->
+emptySet = new Set
 
-  # Return the object if it is already an observable object.
-  return value if typeof value?.observe is "function"
+ObservableFunction = (fn, context) ->
+  listeners = []
 
+  notify = (newValue) ->
+    self._value = newValue
+    copy(listeners).forEach (listener) ->
+      listener(newValue)
+
+  # Our return function is a function that holds only a cached value which is updated when it's dependencies change.
+  # The `magicDependency` call is so other functions can depend on this computed function the same way we depend on other types of observables.
+  self = ->
+    # Automagic dependency observation
+    magicDependency(self)
+    return self._value
+
+  Object.assign self,
+    _value: null
+    _observableDependencies: emptySet
+
+    # We expose releaseDependencies so that
+    releaseDependencies: ->
+      self._observableDependencies.forEach (observable) ->
+        observable.stopObserving changed
+
+    listeners: listeners
+
+    notify: notify
+
+    observe: (listener) ->
+      listeners.push listener
+
+    stopObserving: (fn) ->
+      remove listeners, fn
+
+  # We need to recompute our dependencies whenever any observable value that our function depends on changes. We keep a set
+  # of observables (so we don't needlessly recompute the same ones multiple times). When a dependency changes we recompute
+  # the new set of dependencies and unsubscribe from the old set.
+  changed = ->
+    observableDependencies = new Set
+    global.OBSERVABLE_ROOT_HACK.push(observableDependencies)
+    try
+      value = fn.call(context)
+    finally
+      global.OBSERVABLE_ROOT_HACK.pop()
+
+    self.releaseDependencies()
+    self._observableDependencies = observableDependencies
+    observableDependencies.forEach (observable) ->
+      observable.observe changed
+
+    notify(value)
+
+  changed()
+
+  return self
+
+ObservableValue = (value) ->
   # Maintain a set of listeners to observe changes and provide a helper to notify each observer.
   listeners = []
   notify = (newValue) ->
@@ -24,66 +78,73 @@ module.exports = (value, context) ->
     copy(listeners).forEach (listener) ->
       listener(newValue)
 
-  # If `value` is a function compute dependencies and listen to observables that it depends on.
-  if typeof value is 'function'
-    fn = value
+  # When called with zero arguments it is treated as a getter.
+  # When called with one argument it is treated as a setter.
+  # Changes to the value will trigger notifications.
+  # The value is always returned.
+  self = (newValue) ->
+    if arguments.length > 0
+      if value != newValue
+        value = newValue
 
-    # Our return function is a function that holds only a cached value which is updated when it's dependencies change.
-    # The `magicDependency` call is so other functions can depend on this computed function the same way we depend on other types of observables.
-    self = ->
+        notify(newValue)
+    else
       # Automagic dependency observation
       magicDependency(self)
 
-      return value
+    return value
 
-    # We expose releaseDependencies so that
-    self.releaseDependencies = ->
-      self._observableDependencies?.forEach (observable) ->
-        observable.stopObserving changed
+  Object.assign self,
+    listeners: listeners
 
-    # We need to recompute our dependencies whenever any observable value that our function depends on changes. We keep a set
-    # of observables (so we don't needlessly recompute the same ones multiple times). When a dependency changes we recompute
-    # the new set of dependencies and unsubscribe from the old set.
-    changed = ->
-      observableDependencies = new Set
-      global.OBSERVABLE_ROOT_HACK.push(observableDependencies)
-      try
-        value = fn.call(context)
-      finally
-        global.OBSERVABLE_ROOT_HACK.pop()
+    notify: notify
 
-      self.releaseDependencies()
-      self._observableDependencies = observableDependencies
-      observableDependencies.forEach (observable) ->
-        observable.observe changed
+    observe: (listener) ->
+      listeners.push listener
 
-      notify(value)
+    stopObserving: (fn) ->
+      remove listeners, fn
 
-    changed()
+  # Non-computed observables have no dependencies, releasing them is a non-operation.
+  self.releaseDependencies = noop
+  self._value = value
 
-  else
-    # When called with zero arguments it is treated as a getter.
-    # When called with one argument it is treated as a setter.
-    # Changes to the value will trigger notifications.
-    # The value is always returned.
-    self = (newValue) ->
-      if arguments.length > 0
-        if value != newValue
-          value = newValue
+  return self
 
-          notify(newValue)
-      else
-        # Automagic dependency observation
-        magicDependency(self)
+addExtensions = (o) ->
+  v = o._value
+  exts = switch typeof v
+    when "boolean"
+      toggle: ->
+        o !o._value
+    when "number"
+      increment: (n=1) ->
+        o Number(o._value) + n
 
-      return value
+      decrement: (n=1) ->
+        o Number(o._value) - n
+    else
+      if Array.isArray v
+        # Remove an element from the array and notify observers of changes.
+        remove: (x) ->
+          value = o._value
+          index = value.indexOf(x)
 
-    # Non-computed observables have no dependencies, releasing them is a non-operation.
-    self.releaseDependencies = noop
-    self._value = value
+          if index >= 0
+            returnValue = o.splice(index, 1)[0]
+            return returnValue
 
-  # If the value is an array then proxy array methods and add notifications to mutation events.
-  if Array.isArray(value)
+        get: (index) ->
+          o()[index]
+
+        first: ->
+          o()[0]
+
+        last: ->
+          {length} = a = o()
+          a[length-1]
+
+  if Array.isArray(o._value)
     [
       "concat"
       "every"
@@ -98,9 +159,9 @@ module.exports = (value, context) ->
       "slice"
       "some"
     ].forEach (method) ->
-      self[method] = (args...) ->
-        magicDependency(self)
-        value[method](args...)
+      o[method] = (args...) ->
+        magicDependency(o)
+        o._value[method](args...)
 
     [
       "pop"
@@ -111,67 +172,39 @@ module.exports = (value, context) ->
       "sort"
       "unshift"
     ].forEach (method) ->
-      self[method] = (args...) ->
-        returnValue = value[method](args...)
-        notify(value)
+      o[method] = (args...) ->
+        returnValue = o._value[method](args...)
+        o.notify(o._value)
         return returnValue
 
-    Object.defineProperty self, 'length',
+    Object.defineProperty o, 'length',
       get: ->
-        magicDependency(self)
-        value.length
+        magicDependency(o)
+        o._value.length
       set: (length) ->
-        returnValue = value.length = length
-        notify(value)
+        returnValue = o._value.length = length
+        o.notify(o._value)
         return returnValue
 
-    # Extra methods for array observables
-    Object.assign self,
-      # Remove an element from the array and notify observers of changes.
-      remove: (object) ->
-        index = value.indexOf(object)
+  Object.assign o, exts
 
-        if index >= 0
-          returnValue = value.splice(index, 1)[0]
-          notify(value)
-          return returnValue
+module.exports = (value, context) ->
 
-      get: (index) ->
-        magicDependency(self)
-        value[index]
+  # Return the object if it is already an observable object.
+  return value if typeof value?.observe is "function"
 
-      first: ->
-        magicDependency(self)
-        value[0]
+  # If `value` is a function compute dependencies and listen to observables that it depends on.
+  if typeof value is 'function'
+    self = ObservableFunction(value, context)
+  else
+    self = ObservableValue(value)
 
-      last: ->
-        magicDependency(self)
-        value[value.length-1]
-
-      size: ->
-        magicDependency(self)
-        value.length
+  # If the value is an array then proxy array methods and add notifications to mutation events.
+  addExtensions(self)
 
   Object.assign self,
-    listeners: listeners
-
-    observe: (listener) ->
-      listeners.push listener
-
-    stopObserving: (fn) ->
-      remove listeners, fn
-
-    toggle: ->
-      self !value
-
-    increment: (n=1) ->
-      self Number(value) + n
-
-    decrement: (n=1) ->
-      self Number(value) - n
-
     toString: ->
-      "Observable(#{value})"
+      "Observable(#{self._value})"
 
   return self
 

@@ -1,4 +1,5 @@
-Observable = require "../source/main"
+import Observable from "../dist/main"
+
 assert = require "assert"
 
 describe 'Observable', ->

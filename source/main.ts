@@ -27,9 +27,16 @@ interface Computed<T> extends Observable<T> {
   _observableDependencies: Set<Observable<unknown>>
 }
 
-interface ObservableValue<T> extends Observable<T> {
+
+
+interface Extensions<T> {
+  toggle?: T extends boolean ? () => boolean : undefined
+  increment?: T extends number ? (increment?: number) => number : undefined
+  decrement?: T extends number ? (decrement?: number) => number : undefined
+}
+
+interface ObservableValue<T> extends Observable<T>, Extensions<T> {
   (newValue:T): T
-  toggle?: T extends boolean ? () => void : undefined
 }
 
 interface Observable<T> {

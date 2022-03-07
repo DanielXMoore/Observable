@@ -1,4 +1,7 @@
-import Observable from "../dist/main"
+# import Observable from "../dist/main"
+req = require("../dist/main")
+
+Observable = req.default
 
 assert = require "assert"
 

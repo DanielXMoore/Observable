@@ -40,18 +40,20 @@
     "extension": [
       ".ts"
     ],
-    "exclude": [],
+    "exclude": [
+      "test/"
+    ],
     "sourceMap": true,
     "instrument": true
   },
   "scripts": {
-    "prepare": "coffee --bare --compile --no-header main.coffee",
+    "prepare": "tsc",
     "test": "nyc mocha"
   },
   "files": [
-    "main.js"
+    "dist/"
   ],
-  "main": "main.js",
+  "main": "dist/main.js",
   "description": "Fresh and intellegent observables",
   "repository": {
     "type": "git",

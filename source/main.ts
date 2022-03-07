@@ -27,8 +27,6 @@ interface Computed<T> extends Observable<T> {
   _observableDependencies: Set<Observable<unknown>>
 }
 
-
-
 interface Extensions<T> {
   toggle?: T extends boolean ? () => boolean : undefined
   increment?: T extends number ? (increment?: number) => number : undefined
@@ -48,6 +46,38 @@ interface Observable<T> {
   stopObserving: (fn: (x: T) => void) => void
   releaseDependencies: () => void
 }
+
+function Observable(): ObservableValue<any>
+function Observable(v: null | undefined): Observable<any>
+function Observable<T, O extends Observable<T>> (value: O) : O
+function Observable<T, F extends (this: C) => T[], C> (fn: F, context?: C) : ComputedArray<ReturnType<F>>
+function Observable<T, F extends (this: C) => T, C> (fn: F, context?: C) : Computed<ReturnType<F>>
+function Observable<T, A extends Array<T>> (value: A) : ObservableArray<A[number]>
+function Observable<T> (value: T) : ObservableValue<T>
+function Observable<T> (value?: any, context?: Object) {
+
+  /* istanbul ignore next */
+  if (typeof (value as Observable<T>)?.observe === "function") {
+    return value as unknown as Observable<T>
+  }
+
+  var self : ObservableValue<T>;
+
+  // If `value` is a function compute dependencies and listen to observables that it depends on.
+  if (typeof value === 'function') {
+    self = ObservableFunction(value as () => T, context);
+  } else {
+    self = ObservableValue(value);
+  }
+  // If the value is an array then proxy array methods and add notifications to mutation events.
+  addExtensions(self as ObservableValue<unknown>);
+  Object.assign(self, {
+    toString: function() {
+      return `Observable(${self._value})`;
+    }
+  });
+  return self;
+};
 
 const emptySet : Set<Observable<unknown>> = new Set();
 
@@ -236,38 +266,6 @@ function addExtensions(o: ObservableValue<unknown>) {
   })();
 
   return Object.assign(o, exts);
-};
-
-function Observable(): ObservableValue<any>
-function Observable(v: null | undefined): Observable<any>
-function Observable<T, O extends Observable<T>> (value: O) : O
-function Observable<T, F extends () => T[]> (fn: F, context?: Object) : ComputedArray<T>
-function Observable<T, F extends () => T> (fn: F, context?: Object) : Computed<T>
-function Observable<T, A extends Array<T>> (value: A) : ObservableArray<A[number]>
-function Observable<T> (value: T) : ObservableValue<T>
-function Observable<T> (value?: any, context?: Object) {
-
-  /* istanbul ignore next */
-  if (typeof (value as Observable<T>)?.observe === "function") {
-    return value as unknown as Observable<T>
-  }
-
-  var self : ObservableValue<T>;
-
-  // If `value` is a function compute dependencies and listen to observables that it depends on.
-  if (typeof value === 'function') {
-    self = ObservableFunction(value as () => T, context);
-  } else {
-    self = ObservableValue(value);
-  }
-  // If the value is an array then proxy array methods and add notifications to mutation events.
-  addExtensions(self as ObservableValue<unknown>);
-  Object.assign(self, {
-    toString: function() {
-      return `Observable(${self._value})`;
-    }
-  });
-  return self;
 };
 
 // Appendix

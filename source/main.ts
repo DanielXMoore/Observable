@@ -27,13 +27,16 @@ interface Computed<T> extends Observable<T> {
   _observableDependencies: Set<Observable<unknown>>
 }
 
-interface Extensions<T> {
-  toggle?: T extends boolean ? () => boolean : undefined
-  increment?: T extends number ? (increment?: number) => number : undefined
-  decrement?: T extends number ? (decrement?: number) => number : undefined
+interface ObservableBoolean<T> extends ObservableValue<T> {
+  toggle: () => boolean
 }
 
-interface ObservableValue<T> extends Observable<T>, Extensions<T> {
+interface ObservableNumber<T> extends ObservableValue<T> {
+  increment: (increment?: number) => number
+  decrement: (decrement?: number) => number
+}
+
+interface ObservableValue<T> extends Observable<T> {
   (newValue:T): T
 }
 
@@ -53,15 +56,18 @@ function Observable<T, O extends Observable<T>> (value: O) : O
 function Observable<T, F extends (this: C) => T[], C> (fn: F, context?: C) : ComputedArray<ReturnType<F>>
 function Observable<T, F extends (this: C) => T, C> (fn: F, context?: C) : Computed<ReturnType<F>>
 function Observable<T, A extends Array<T>> (value: A) : ObservableArray<A[number]>
-function Observable<T> (value: T) : ObservableValue<T>
-function Observable<T> (value?: any, context?: Object) {
+function Observable<T> (value: T) :
+  T extends boolean ? ObservableBoolean<T> :
+  T extends number  ? ObservableNumber<T> :
+  ObservableValue<T>
+function Observable<T> (value?: any, context?: Object) : Observable<any> {
 
   /* istanbul ignore next */
   if (typeof (value as Observable<T>)?.observe === "function") {
-    return value as unknown as Observable<T>
+    return value as Observable<T>
   }
 
-  var self : ObservableValue<T>;
+  var self : Observable<T>;
 
   // If `value` is a function compute dependencies and listen to observables that it depends on.
   if (typeof value === 'function') {
@@ -187,15 +193,19 @@ function ObservableValue<T>(value:T) : ObservableValue<T> {
 };
 
 function arrayExtensions<T>(o: ObservableArray<T>) {
-  ["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf", "map", "reduce", "reduceRight", "slice", "some"].forEach(function(method) {
-    return o[method] = function(...args) {
+  (["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf", "map", "reduce", "reduceRight", "slice", "some"] as const).forEach(function(method) {
+    // @ts-ignore
+    o[method] = function(...args: Parameters<Array<T>[typeof method]>) {
       magicDependency(o as Observable<unknown>);
+      // @ts-ignore
       return o._value[method](...args);
     };
   });
-  ["pop", "push", "reverse", "shift", "splice", "sort", "unshift"].forEach(function(method) {
-    return o[method] = function(...args) {
+  (["pop", "push", "reverse", "shift", "splice", "sort", "unshift"] as const).forEach(function(method) {
+    // @ts-ignore
+    o[method] = function(...args) {
       var returnValue;
+      // @ts-ignore
       returnValue = o._value[method](...args);
       o.notify(o._value);
       return returnValue;

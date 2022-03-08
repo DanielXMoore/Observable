@@ -1,5 +1,5 @@
 # import Observable from "../dist/main"
-req = require("../dist/main")
+req = require("../source/main")
 
 Observable = req.default
 
@@ -71,7 +71,7 @@ describe 'Observable', ->
     observable = Observable("string")
 
     called = 0
-    fn = (newValue) ->
+    fn = (newValue="") ->
       called += 1
       assert.equal newValue, "4life"
 
@@ -143,10 +143,10 @@ describe "Observable Array", ->
       assert.equal n, 5
 
   it "should notify on mutation methods", (done) ->
-    o = Observable []
+    o = Observable [0]
 
     o.observe (newValue) ->
-      assert.equal newValue[0], 1
+      assert.equal newValue[1], 1
 
     o.push 1
 
@@ -299,16 +299,15 @@ describe "Observable functions", ->
     bottom("wat")
 
   it "should work with dynamic dependencies", ->
-    observableArray = Observable []
+    observableArray = Observable [
+      age: Observable 1
+    ]
 
     dynamicObservable = Observable ->
       observableArray.filter (item) ->
         item.age() > 3
 
     assert.equal dynamicObservable().length, 0
-
-    observableArray.push
-      age: Observable 1
 
     observableArray()[0].age 5
     assert.equal dynamicObservable().length, 1
@@ -317,10 +316,9 @@ describe "Observable functions", ->
     model =
       a: Observable "Hello"
       b: Observable "there"
+      c: -> "#{@a()} #{@b()}"
 
-    model.c = Observable ->
-      "#{@a()} #{@b()}"
-    , model
+    model.c = Observable model.c, model
 
     assert.equal model.c(), "Hello there"
 
@@ -360,12 +358,17 @@ describe "Observable functions", ->
     letter = Observable "A"
     checked = ->
       l = letter()
+      # @ts-ignore
       @name().indexOf(l) is 0
 
-    first = {name: Observable("Andrew")}
+    first =
+      name: Observable("Andrew")
+      checked: checked
     first.checked = Observable checked, first
 
-    second = {name: Observable("Benjamin")}
+    second =
+      name: Observable("Benjamin")
+      checked: checked
     second.checked = Observable checked, second
 
     assert.equal first.checked(), true
@@ -441,12 +444,11 @@ describe "Observable functions", ->
     model =
       firstName: Observable "Duder"
       lastName: Observable "Man"
+      name: ->
+        "#{@firstName()} #{@lastName()}"
 
-    model.name = Observable ->
-      "#{@firstName()} #{@lastName()}"
-    , model
-
-    model.name.observe (newValue) ->
+    (model.name = Observable model.name, model)
+    .observe (newValue) ->
       assert.equal newValue, "Duder Bro"
 
       done()

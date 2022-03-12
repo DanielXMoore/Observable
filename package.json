@@ -54,6 +54,7 @@
     "dist/"
   ],
   "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "description": "Fresh and intellegent observables",
   "repository": {
     "type": "git",

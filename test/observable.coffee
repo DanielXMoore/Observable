@@ -1,11 +1,13 @@
-# import Observable from "../dist/main"
-req = require("../source/main")
-
-Observable = req.default
+{default: Observable} = require("../")
 
 assert = require "assert"
 
 describe 'Observable', ->
+  it "should create an observable with no value", ->
+    o = Observable()
+
+    assert.equal o(), undefined
+
   it 'should create an observable for an object', ->
     n = 5
 

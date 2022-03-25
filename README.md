@@ -8,12 +8,12 @@ Installation
 
 Node
 
-    npm install o_0
+    npm @danielx/observable
 
 Usage
 -----
 
-    Observable = require "o_0"
+    Observable = require "@danielx/observable"
 
 Get notified when the value changes.
 

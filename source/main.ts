@@ -311,4 +311,4 @@ function noop(): void { }
 
 Observable.OBSERVABLE_ROOT = OBSERVABLE_ROOT;
 
-export = Observable;
+export default Observable;

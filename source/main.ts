@@ -23,8 +23,8 @@ interface ComputedArray<T> extends Array<T>, Computed<Array<T>> {
 
 }
 
-interface Computed<T> extends Observable<T> {
-  _observableDependencies: Set<Observable<unknown>>
+interface Computed<T> extends ObservableI<T> {
+  _observableDependencies: Set<ObservableI<unknown>>
 }
 
 interface ObservableBoolean<T> extends ObservableValue<T> {
@@ -36,11 +36,11 @@ interface ObservableNumber<T> extends ObservableValue<T> {
   decrement: (decrement?: number) => number
 }
 
-interface ObservableValue<T> extends Observable<T> {
+interface ObservableValue<T> extends ObservableI<T> {
   (newValue: T): T
 }
 
-interface Observable<T> {
+interface ObservableI<T> {
   (): T
   _value: T
   listeners: Array<(x: T) => void>
@@ -51,8 +51,8 @@ interface Observable<T> {
 }
 
 function Observable(): ObservableValue<any>
-function Observable(v: null | undefined): Observable<any>
-function Observable<T, O extends Observable<T>>(value: O): O
+function Observable(v: null | undefined): ObservableI<any>
+function Observable<T, O extends ObservableI<T>>(value: O): O
 function Observable<T, F extends (this: C) => T[], C>(fn: F, context?: C): ComputedArray<ReturnType<F>>
 function Observable<T, F extends (this: C) => T, C>(fn: F, context?: C): Computed<ReturnType<F>>
 function Observable<T, A extends Array<T>>(value: A): ObservableArray<A[number]>
@@ -60,14 +60,14 @@ function Observable<T>(value: T):
   T extends boolean ? ObservableBoolean<T> :
   T extends number ? ObservableNumber<T> :
   ObservableValue<T>
-function Observable<T>(value?: any, context?: Object): Observable<any> {
+function Observable<T>(value?: any, context?: Object): ObservableI<any> {
 
   /* istanbul ignore next */
-  if (typeof (value as Observable<T>)?.observe === "function") {
-    return value as Observable<T>
+  if (typeof (value as ObservableI<T>)?.observe === "function") {
+    return value as ObservableI<T>
   }
 
-  var self: Observable<T>;
+  var self: ObservableI<T>;
 
   // If `value` is a function compute dependencies and listen to observables that it depends on.
   if (typeof value === 'function') {
@@ -85,7 +85,7 @@ function Observable<T>(value?: any, context?: Object): Observable<any> {
   return self;
 };
 
-const emptySet: Set<Observable<unknown>> = new Set();
+const emptySet: Set<ObservableI<unknown>> = new Set();
 
 function ObservableFunction<T>(
   fn: () => T,
@@ -104,14 +104,14 @@ function ObservableFunction<T>(
   // The `magicDependency` call is so other functions can depend on this computed function the same way we depend on other types of observables.
   const self: Computed<T> = Object.assign(function () {
     // Automagic dependency observation
-    magicDependency(self as Observable<unknown>);
+    magicDependency(self as ObservableI<unknown>);
     return self._value;
   }, {
     _value: null as unknown as T,
     _observableDependencies: emptySet,
     // We expose releaseDependencies so that
     releaseDependencies: function () {
-      self._observableDependencies.forEach(function (observable: Observable<unknown>) {
+      self._observableDependencies.forEach(function (observable: ObservableI<unknown>) {
         observable.stopObserving(changed);
       });
     },
@@ -129,7 +129,7 @@ function ObservableFunction<T>(
   // the new set of dependencies and unsubscribe from the old set.
   function changed() {
     let value: T;
-    const observableDependencies = new Set<Observable<unknown>>();
+    const observableDependencies = new Set<ObservableI<unknown>>();
     OBSERVABLE_ROOT.push(observableDependencies);
     try {
       value = fn.call(context);
@@ -171,7 +171,7 @@ function ObservableValue<T>(value: T): ObservableValue<T> {
       }
     } else {
       // Automagic dependency observation
-      magicDependency(self as Observable<unknown>);
+      magicDependency(self as ObservableI<unknown>);
     }
     return value;
   }, {
@@ -196,7 +196,7 @@ function arrayExtensions<T>(o: ObservableArray<T>) {
   (["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf", "map", "reduce", "reduceRight", "slice", "some"] as const).forEach(function (method) {
     // @ts-ignore
     o[method] = function (...args: Parameters<Array<T>[typeof method]>) {
-      magicDependency(o as Observable<unknown>);
+      magicDependency(o as ObservableI<unknown>);
       // @ts-ignore
       return o._value[method](...args);
     };
@@ -213,7 +213,7 @@ function arrayExtensions<T>(o: ObservableArray<T>) {
   });
   Object.defineProperty(o, 'length', {
     get: function () {
-      magicDependency(o as Observable<unknown>);
+      magicDependency(o as ObservableI<unknown>);
       return (o._value as Array<unknown>).length;
     },
     set: function (length) {
@@ -282,9 +282,9 @@ function addExtensions(o: ObservableValue<unknown>) {
 // --------
 
 // Dropping support for simultaneous use of different versions
-const OBSERVABLE_ROOT: Array<Set<Observable<unknown>>> = [];
+const OBSERVABLE_ROOT: Array<Set<ObservableI<unknown>>> = [];
 
-function magicDependency(self: Observable<unknown>) {
+function magicDependency(self: ObservableI<unknown>) {
   var observerSet;
   observerSet = last(OBSERVABLE_ROOT);
   if (observerSet) {

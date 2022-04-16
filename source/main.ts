@@ -299,11 +299,11 @@ function remove<T>(array: Array<T>, value: T): T | undefined {
   }
 };
 
-function copy<T>(array: Array<T>): Array<T> {
+function copy<T>(array: Array<T>) {
   return array.slice();
 };
 
-function last<T>(array: T[]): T {
+function last<T>(array: T[]) {
   return array[array.length - 1];
 }
 

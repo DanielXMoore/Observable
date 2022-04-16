@@ -311,7 +311,7 @@ describe "Observable functions", ->
 
     assert.equal dynamicObservable().length, 0
 
-    observableArray()[0].age 5
+    observableArray()[0]?.age 5
     assert.equal dynamicObservable().length, 1
 
   it "should work with context", ->
@@ -330,7 +330,7 @@ describe "Observable functions", ->
 
   it "should be ok even if the function throws an exception", ->
     assert.throws ->
-      t = Observable ->
+      Observable ->
         throw "wat"
 
     # TODO: Should be able to find a test case that is affected by this rather than

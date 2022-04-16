@@ -1,6 +1,6 @@
 {
   "name": "@danielx/observable",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "devDependencies": {
     "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.21",

@@ -1,5 +1,6 @@
 .nyc_output/
 coverage/
 dist/
+docs/
 main.js
 node_modules/

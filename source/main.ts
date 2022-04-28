@@ -50,6 +50,9 @@ interface ObservableI<T> {
   releaseDependencies: () => void
 }
 
+/**
+ * Create an `Observable` value.
+ */
 function Observable(): ObservableValue<any>
 function Observable(v: null | undefined): ObservableI<any>
 function Observable<T, O extends ObservableI<T>>(value: O): O
@@ -232,6 +235,7 @@ function arrayExtensions<T>(o: ObservableArray<T>) {
       if (index >= 0) {
         return o.splice(index, 1)[0];
       }
+      return
     },
     get: function (index: number) {
       return o()[index];
@@ -273,6 +277,7 @@ function addExtensions(o: ObservableValue<unknown>) {
           }
         };
     }
+    return
   })();
 
   return Object.assign(o, exts);
@@ -288,7 +293,7 @@ function magicDependency(self: ObservableI<unknown>) {
   var observerSet;
   observerSet = last(OBSERVABLE_ROOT);
   if (observerSet) {
-    return observerSet.add(self);
+    observerSet.add(self);
   }
 };
 
@@ -297,6 +302,7 @@ function remove<T>(array: Array<T>, value: T): T | undefined {
   if (index >= 0) {
     return array.splice(index, 1)[0];
   }
+  return
 };
 
 function copy<T>(array: Array<T>) {

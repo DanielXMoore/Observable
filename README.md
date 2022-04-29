@@ -51,3 +51,14 @@ Automagically compute dependencies for observable functions.
       assert.equal newValue, "Duder Bro"
 
     lastName "Bro"
+
+Changelog
+---------
+
+### 0.6.0
+
+- ES6 Exports
+
+### 0.5.1
+
+- Exporting TypeScript types

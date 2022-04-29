@@ -1,4 +1,4 @@
-Observable = require "../"
+{Observable} = require "../"
 
 assert = require "assert"
 

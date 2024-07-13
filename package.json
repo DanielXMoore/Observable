@@ -21,10 +21,7 @@
     }
   },
   "description": "Fresh and intellegent observables",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/DanielXMoore/Observable.git"
-  },
+  "repository": "git://github.com/DanielXMoore/Observable.git",
   "keywords": [
     "observable"
   ],

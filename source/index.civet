@@ -10,8 +10,6 @@ Standard array methods are proxied through to the underlying array.
 
 */
 
-"use strict";
-
 interface ObservableArray<T> extends Array<T>, ObservableValue<Array<T>> {
   first: () => Array<T>[number]
   last: () => Array<T>[number]
@@ -59,8 +57,7 @@ function Observable<T, O extends ObservableI<T>>(value: O): O
 function Observable<T, F extends (this: C) => T[], C>(fn: F, context?: C): ComputedArray<ReturnType<F>>
 function Observable<T, F extends (this: C) => T, C>(fn: F, context?: C): Computed<ReturnType<F>>
 function Observable<T, A extends Array<T>>(value: A): ObservableArray<A[number]>
-function Observable<T>(value: T):
-  T extends boolean ? ObservableBoolean<T> :
+function Observable<T>(value: T): T extends boolean ? ObservableBoolean<T> :
   T extends number ? ObservableNumber<T> :
   ObservableValue<T>
 function Observable<T>(value?: any, context?: Object): ObservableI<any> {
@@ -320,11 +317,14 @@ Observable.OBSERVABLE_ROOT = OBSERVABLE_ROOT;
 export {
   Observable as default,
   Observable,
+}
+
+export type {
+  Computed,
+  ComputedArray,
   ObservableI,
   ObservableArray,
   ObservableBoolean,
   ObservableNumber,
   ObservableValue,
-  Computed,
-  ComputedArray,
 }

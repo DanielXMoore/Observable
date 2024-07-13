@@ -1,0 +1,19 @@
+esbuild from esbuild
+civetPlugin from @danielx/civet/esbuild
+
+esbuild.build
+  entryPoints: ['source/index.civet']
+  format: 'esm'
+  tsconfig: "./tsconfig.json"
+  bundle: true
+  sourcemap: true
+  outdir: 'dist/'
+  outExtension:
+    ".js": ".mjs"
+  plugins: [
+    civetPlugin
+      ts: "civet"
+      emitDeclaration: true
+  ]
+.catch ->
+  process.exit 1

@@ -57,7 +57,7 @@
     "require": [
       "./test/register.mjs"
     ],
-    "reporter": "spec",
+    "reporter": "dot",
     "recursive": true,
     "spec": [
       "test"

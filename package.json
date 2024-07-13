@@ -46,8 +46,8 @@
     "extension": [
       "civet"
     ],
-    "loader": [
-      "@danielx/civet/esm"
+    "require": [
+      "./test/register.mjs"
     ],
     "reporter": "spec",
     "recursive": true,

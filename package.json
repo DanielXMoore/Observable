@@ -10,24 +10,29 @@
   "files": [
     "dist/"
   ],
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "description": "Fresh and intellegent observables",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/DanielXMoore/Observable.git"
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
+  "description": "Fresh and intellegent observables",
+  "repository": "git://github.com/DanielXMoore/Observable.git",
   "keywords": [
     "observable"
   ],
   "devDependencies": {
-    "@danielx/civet": "^0.7.17",
-    "@types/mocha": "^9.1.0",
-    "c8": "^10.1.2",
-    "esbuild": "^0.23.0",
-    "mocha": "^10.6.0",
-    "typedoc": "^0.26.3",
-    "typescript": "^5.5.3"
+    "@danielx/civet": "0.7.17",
+    "@types/mocha": "10.0.6",
+    "c8": "10.1.2",
+    "esbuild": "0.23.0",
+    "mocha": "10.6.0",
+    "typedoc": "0.26.3",
+    "typescript": "5.5.3"
   },
   "c8": {
     "all": true,
@@ -46,10 +51,10 @@
     "extension": [
       "civet"
     ],
-    "loader": [
-      "@danielx/civet/esm"
+    "require": [
+      "./test/register.mjs"
     ],
-    "reporter": "spec",
+    "reporter": "dot",
     "recursive": true,
     "spec": [
       "test"

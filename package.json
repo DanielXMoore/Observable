@@ -10,6 +10,7 @@
   "files": [
     "dist/"
   ],
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "description": "Fresh and intellegent observables",
@@ -22,7 +23,7 @@
   ],
   "devDependencies": {
     "@danielx/civet": "0.7.17",
-    "@types/mocha": "9.1.0",
+    "@types/mocha": "10.0.6",
     "c8": "10.1.2",
     "esbuild": "0.23.0",
     "mocha": "10.6.0",

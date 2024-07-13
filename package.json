@@ -21,13 +21,13 @@
     "observable"
   ],
   "devDependencies": {
-    "@danielx/civet": "^0.7.17",
-    "@types/mocha": "^9.1.0",
-    "c8": "^10.1.2",
-    "esbuild": "^0.23.0",
-    "mocha": "^10.6.0",
-    "typedoc": "^0.26.3",
-    "typescript": "^5.5.3"
+    "@danielx/civet": "0.7.17",
+    "@types/mocha": "9.1.0",
+    "c8": "10.1.2",
+    "esbuild": "0.23.0",
+    "mocha": "10.6.0",
+    "typedoc": "0.26.3",
+    "typescript": "5.5.3"
   },
   "c8": {
     "all": true,

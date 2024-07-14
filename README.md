@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/distri/observable.svg?branch=npm)](https://travis-ci.org/distri/observable)
+[![Build](https://github.com/DanielXMoore/Observable/actions/workflows/build.yml/badge.svg)](https://github.com/DanielXMoore/Observable/actions/workflows/build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/DanielXMoore/Observable/badge.svg?branch=master)](https://coveralls.io/github/DanielXMoore/Observable?branch=master)
 
 Observable
 ==========

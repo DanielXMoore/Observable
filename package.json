@@ -52,7 +52,7 @@
       "civet"
     ],
     "require": [
-      "./test/register.mjs"
+      "@danielx/civet/register"
     ],
     "reporter": "dot",
     "recursive": true,

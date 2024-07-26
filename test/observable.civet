@@ -34,8 +34,9 @@ describe 'Observable', ->
 
   it 'should be idempotent', ->
     o := Observable(5)
+    o2 := Observable o
 
-    assert.equal o, Observable(o)
+    assert.equal o, o2
 
   it "should create an observbale for objects that have a non-function observe property", ->
     o := Observable
@@ -230,6 +231,13 @@ describe "Observable functions", ->
       done()
 
     lastName "Bro"
+
+  it "should have context", ->
+    o := Observable ->
+      this.x
+    , {x: true}
+
+    assert o()
 
   it "should compute array#get as a dependency", ->
     observableArray := Observable [0, 1, 2]

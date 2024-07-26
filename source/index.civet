@@ -53,14 +53,14 @@ interface ObservableI<T> {
  */
 function Observable(): ObservableValue<any>
 function Observable(v: null | undefined): ObservableI<any>
-function Observable<T, O extends ObservableI<T>>(value: O): O
+function Observable<O extends ObservableI<any>>(value: O): O
 function Observable<T, F extends (this: C) => T[], C>(fn: F, context?: C): ComputedArray<ReturnType<F>>
 function Observable<T, F extends (this: C) => T, C>(fn: F, context?: C): Computed<ReturnType<F>>
-function Observable<T, A extends Array<T>>(value: A): ObservableArray<A[number]>
+function Observable<A extends Array<any>>(value: A): ObservableArray<A[number]>
 function Observable<T>(value: T): T extends boolean ? ObservableBoolean<T> :
   T extends number ? ObservableNumber<T> :
   ObservableValue<T>
-function Observable<T>(value?: any, context?: Object): ObservableI<any> {
+function Observable<T>(value?: any, context?: unknown): ObservableI<any> {
 
   /* istanbul ignore next */
   if (typeof (value as ObservableI<T>)?.observe === "function") {
@@ -89,7 +89,7 @@ const emptySet: Set<ObservableI<unknown>> = new Set();
 
 function ObservableFunction<T>(
   fn: () => T,
-  context?: Object
+  context?: unknown
 ): Computed<T> {
 
   const listeners: Array<(x: T) => void> = [];

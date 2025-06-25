@@ -32,7 +32,7 @@
     "esbuild": "0.23.0",
     "mocha": "10.6.0",
     "typedoc": "0.26.3",
-    "typescript": "5.5.3"
+    "typescript": "5.8.3"
   },
   "c8": {
     "all": true,

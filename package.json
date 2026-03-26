@@ -26,11 +26,11 @@
     "observable"
   ],
   "devDependencies": {
-    "@danielx/civet": "0.10.5",
+    "@danielx/civet": "0.11.5",
     "@types/mocha": "10.0.6",
-    "c8": "10.1.2",
-    "esbuild": "0.25.5",
-    "mocha": "10.6.0",
+    "c8": "11.0.0",
+    "esbuild": "0.27.3",
+    "mocha": "11.7.5",
     "typedoc": "0.26.3",
     "typescript": "5.8.3"
   },

@@ -167,7 +167,8 @@ function ObservableValue<T>(value: T): ObservableValue<T> {
     if (arguments.length) {
       if (value !== newValue) {
         // Must have a value if there were arguments
-        notify(value = newValue as T);
+        value = newValue as T
+        notify value
       }
     } else {
       // Automagic dependency observation
